@@ -3,632 +3,323 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sistema Vivo de Gestão de PDI - Senac 2026</title>
-    
-    <!-- CSS Bootstrap e Icones -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
-    
-    <!-- Scripts Chart.js, SheetJS, e Bootstrap Bundle -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <title>Módulo PDI - Gestão de Desempenho</title>
+    <!-- Chart.js para os gráficos interagirem -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-    
-    <!-- SDKs do Firebase (Firestore e Auth APENAS) -->
-    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
-
     <style>
-        body { background-color: #f4f6f9; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
-        .header-senac { background-color: #004a8d; color: white; padding: 20px 0; border-bottom: 4px solid #f2a900; }
-        .card { border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); border: none; margin-bottom: 20px; }
-        .card-header { background-color: #ffffff; border-bottom: 1px solid #eee; font-weight: bold; color: #004a8d; font-size: 1.1rem; }
-        .competency-row { padding: 12px 0; border-bottom: 1px dashed #eee; transition: background-color 0.5s ease; }
-        .competency-row.highlight { background-color: #e8f4f8; }
-        .btn-senac { background-color: #f2a900; color: #fff; font-weight: bold; border: none; }
-        .btn-senac:hover { background-color: #d19200; color: #fff; }
-        
-        /* Design do PDI Estilo Documento */
-        .mini-pdi-box { background-color: #fff; padding: 30px; box-shadow: 0 0 15px rgba(0,0,0,0.05); border: 1px solid #ddd; border-top: 5px solid #004a8d; border-radius: 4px; font-size: 0.95em; line-height: 1.6; transition: all 0.3s ease; }
-        .mini-pdi-box:focus { outline: none; border-color: #f2a900; background-color: #fafbfc; }
-        .pdi-section-title { color: #004a8d; font-weight: bold; border-bottom: 1px solid #eee; padding-bottom: 5px; margin-top: 15px; margin-bottom: 10px; }
-        
-        .chart-container { position: relative; height: 300px; width: 100%; }
-        select, textarea, input { border-color: #ced4da; box-shadow: none !important; }
-        
-        /* Timeline de Tratativas */
-        .timeline { position: relative; border-left: 2px solid #e9ecef; margin-left: 15px; padding-left: 20px; }
-        .log-item { background: #fff; border: 1px solid #e9ecef; padding: 15px; margin-bottom: 15px; border-radius: 6px; font-size: 0.95rem; position: relative; box-shadow: 0 2px 4px rgba(0,0,0,0.02); }
-        .log-item::before { content: ''; position: absolute; left: -27px; top: 15px; width: 12px; height: 12px; border-radius: 50%; background-color: #004a8d; border: 2px solid #fff; box-shadow: 0 0 0 2px #e9ecef; }
-        
-        .log-date { font-weight: bold; color: #495057; }
-        .log-analyst { font-size: 0.85rem; color: #000; background-color: #ffc107; padding: 3px 8px; border-radius: 4px; margin-left: 8px; font-weight: bold; border: 1px solid #d39e00; }
-        .log-type { font-size: 0.8rem; color: #fff; background-color: #004a8d; padding: 2px 6px; border-radius: 4px; margin-left: 4px; }
-        .log-status-select { font-size: 0.8rem; padding: 2px 4px; border-radius: 4px; border: 1px solid #ccc; margin-left: 10px; font-weight: bold; background-color: #f8f9fa; }
-        .evidence-badge { background-color: #f8f9fa; color: #6c757d; padding: 4px 8px; border-radius: 4px; font-size: 0.8rem; border: 1px dashed #6c757d; display: inline-block; margin-top: 10px; }
-
-        .elogio { color: #198754; font-weight: 500; }
-        .construcao { color: #dc3545; font-weight: 500; }
-        .acao { color: #0d6efd; font-weight: 500; }
-        
-        @media print {
-            body { background-color: #fff; }
-            .no-print { display: none !important; }
-            .card { box-shadow: none; border: none; break-inside: avoid; }
-            .col-lg-6 { width: 100%; }
-            #printableReport { display: block !important; }
+        :root {
+            --senac-blue: #004a8f;
+            --senac-orange: #f37021;
+            --bg-color: #f4f7f6;
+            --card-bg: #ffffff;
+            --text-main: #333333;
+            --text-light: #666666;
+            --border-color: #e0e0e0;
         }
+
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: var(--bg-color); color: var(--text-main); margin: 0; display: flex; height: 100vh; overflow: hidden; }
+        
+        /* Layout Grid */
+        .sidebar { width: 320px; background: var(--card-bg); border-right: 1px solid var(--border-color); display: flex; flex-direction: column; overflow-y: auto; }
+        .sidebar-header { padding: 20px; background: var(--senac-blue); color: white; }
+        .sidebar-header h2 { margin: 0; font-size: 1.2rem; }
+        .sidebar-header p { margin: 5px 0 0 0; font-size: 0.9rem; opacity: 0.8; }
+        
+        .main-content { flex: 1; padding: 30px; overflow-y: auto; display: grid; grid-template-columns: 1fr 1fr; gap: 20px; grid-template-rows: auto auto 1fr; }
+        
+        /* Caixinhas (Cards) de Instrutores */
+        .instructor-list { padding: 15px; }
+        .instructor-card { background: var(--bg-color); border: 1px solid var(--border-color); border-radius: 8px; padding: 15px; margin-bottom: 15px; cursor: pointer; transition: all 0.2s; }
+        .instructor-card:hover { border-color: var(--senac-orange); box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
+        .instructor-card.active { border-color: var(--senac-orange); background: #fff5f0; border-left: 4px solid var(--senac-orange); }
+        .instructor-card h3 { margin: 0 0 5px 0; font-size: 1.1rem; color: var(--senac-blue); }
+        .instructor-card p { margin: 0; font-size: 0.85rem; color: var(--text-light); }
+        .class-tags { display: flex; gap: 5px; margin-top: 10px; flex-wrap: wrap; }
+        .class-tag { background: #e2e8f0; font-size: 0.75rem; padding: 3px 8px; border-radius: 12px; color: #475569; }
+
+        /* Painéis do Conteúdo Principal */
+        .panel { background: var(--card-bg); border-radius: 10px; padding: 20px; box-shadow: 0 2px 10px rgba(0,0,0,0.03); border: 1px solid var(--border-color); }
+        .panel-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; border-bottom: 1px solid var(--border-color); padding-bottom: 10px; }
+        .panel-header h2 { margin: 0; font-size: 1.2rem; color: var(--senac-blue); }
+        
+        /* Gráfico e Pontuação */
+        .score-display { font-size: 3rem; font-weight: bold; color: var(--senac-orange); text-align: center; margin: 10px 0; }
+        .score-scale { text-align: center; font-size: 0.9rem; font-weight: bold; padding: 5px 10px; border-radius: 5px; display: inline-block; width: 100%; box-sizing: border-box;}
+        .scale-supera { background: #dcfce7; color: #166534; }
+        .scale-atende { background: #fef08a; color: #854d0e; }
+        
+        .chart-container { position: relative; height: 200px; width: 100%; }
+
+        /* Parecer */
+        .parecer-text { font-size: 0.95rem; line-height: 1.6; color: #444; background: #f8fafc; padding: 15px; border-radius: 6px; border-left: 3px solid var(--senac-blue); min-height: 150px; }
+
+        /* Gerador de Feedback */
+        .feedback-generator { grid-column: 1 / -1; }
+        .controls { display: flex; gap: 15px; margin-bottom: 15px; }
+        select { flex: 1; padding: 10px; border: 1px solid var(--border-color); border-radius: 5px; font-size: 0.95rem; outline: none; }
+        select:focus { border-color: var(--senac-blue); }
+        
+        .feedback-result { display: flex; flex-direction: column; gap: 15px; }
+        .feedback-box { background: #f8fafc; border: 1px solid #cbd5e1; padding: 15px; border-radius: 6px; position: relative; }
+        .feedback-box h4 { margin: 0 0 10px 0; display: flex; align-items: center; gap: 8px; }
+        .feedback-box h4.positive { color: #166534; }
+        .feedback-box h4.development { color: #b45309; }
+        .feedback-box p { margin: 0; font-size: 0.95rem; line-height: 1.5; }
+        .copy-btn { position: absolute; top: 15px; right: 15px; background: white; border: 1px solid #cbd5e1; padding: 5px 10px; border-radius: 4px; cursor: pointer; font-size: 0.8rem; transition: 0.2s; }
+        .copy-btn:hover { background: var(--senac-blue); color: white; border-color: var(--senac-blue); }
+
     </style>
 </head>
 <body>
 
-<!-- TELA DE LOGIN -->
-<div id="loginOverlay" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #004a8d; z-index: 9999; display: flex; align-items: center; justify-content: center;">
-    <div class="bg-white p-5 rounded text-center shadow-lg" style="max-width: 400px; width: 100%;">
-        <h3 style="color: #004a8d; font-weight: bold;">Senac PDI 2026</h3>
-        <p class="text-muted mb-4">Acesso restrito a Analistas</p>
-        <input type="email" id="emailInput" class="form-control mb-3" placeholder="E-mail de Acesso">
-        <input type="password" id="passwordInput" class="form-control mb-3" placeholder="Senha">
-        <button class="btn btn-senac w-100 mb-2" onclick="fazerLogin()">Entrar no Sistema</button>
-        <p id="loginError" class="text-danger small" style="display: none;">Credenciais inválidas.</p>
-    </div>
-</div>
-
-<div id="appContent" style="display: none;">
-    <div class="header-senac text-center mb-4 no-print position-relative">
-        <h2>Sistema Vivo de Gestão de PDI - Senac 2026</h2>
-        <p class="mb-0">Avaliações Dinâmicas e Arquivamento Local de Evidências</p>
-        <div class="position-absolute" style="top: 20px; right: 20px;">
-            <button class="btn btn-sm btn-outline-light" onclick="fazerLogout()"><i class="bi bi-box-arrow-right"></i> Sair</button>
+    <!-- Lateral: Lista de Instrutores e Turmas -->
+    <div class="sidebar">
+        <div class="sidebar-header">
+            <h2>Módulo de Avaliação</h2>
+            <p>Analista: Bruna Baldan</p>
+        </div>
+        <div class="instructor-list" id="instructorList">
+            <!-- Gerado via JS -->
         </div>
     </div>
 
-    <div class="container-fluid px-4 no-print">
-        <div class="row">
-            <!-- COLUNA ESQUERDA -->
-            <div class="col-lg-5">
-                <div class="row">
-                    <div class="col-md-6">
-                        <div class="card border-primary mb-3">
-                            <div class="card-header bg-primary text-white py-2"><i class="bi bi-person-badge"></i> Analista</div>
-                            <div class="card-body bg-light py-2">
-                                <select class="form-select form-select-sm" id="analistaSelect">
-                                    <option value="" selected disabled>Selecione...</option>
-                                    <option value="Bruna Baldan">Bruna Baldan</option>
-                                    <option value="Bianca">Bianca</option>
-                                    <option value="Mariana">Mariana</option>
-                                    <option value="Michel">Michel</option>
-                                    <option value="Juliana">Juliana</option>
-                                </select>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-md-6">
-                        <div class="card border-success mb-3">
-                            <div class="card-header bg-success text-white py-2"><i class="bi bi-file-earmark-excel"></i> Base Excel</div>
-                            <div class="card-body bg-light py-2">
-                                <input class="form-control form-control-sm" type="file" id="excelUpload" accept=".xlsx, .xls">
-                            </div>
-                        </div>
-                    </div>
-                </div>
+    <!-- Conteúdo Principal -->
+    <div class="main-content">
+        
+        <!-- Painel 1: Gráfico e Pontuação -->
+        <div class="panel">
+            <div class="panel-header">
+                <h2>Desempenho Geral</h2>
+                <span id="currentInstructorName" style="color: var(--text-light); font-weight: bold;">Selecione...</span>
+            </div>
+            <div class="score-display" id="displayScore">0,00</div>
+            <div id="displayScale" class="score-scale">Aguardando...</div>
+            <div class="chart-container mt-4">
+                <canvas id="radarChart"></canvas>
+            </div>
+        </div>
 
-                <div class="card">
-                    <div class="card-header"><i class="bi bi-clipboard-data"></i> 1. Instrutor e Turmas</div>
-                    <div class="card-body">
-                        <div class="row">
-                            <div class="col-md-12 mb-3">
-                                <label class="form-label small fw-bold">Instrutor(a)</label>
-                                <div class="input-group">
-                                    <select class="form-select form-select-sm" id="instrutorSelect" onchange="selecionarInstrutor()">
-                                        <option value="" selected disabled>Carregando Base...</option>
-                                    </select>
-                                    <button class="btn btn-sm btn-outline-success" type="button" onclick="addInstrutor()">+</button>
-                                    <button class="btn btn-sm btn-outline-danger" type="button" onclick="delInstrutor()">-</button>
-                                </div>
-                            </div>
-                            <div class="col-md-12 mb-3">
-                                <label class="form-label small fw-bold">Turma(s) Vinculada(s) (Base Global)</label>
-                                <div class="input-group">
-                                    <select class="form-select form-select-sm" id="turmaSelect">
-                                        <option value="" selected>Carregando Turmas...</option>
-                                    </select>
-                                    <button class="btn btn-sm btn-outline-primary" type="button" onclick="addTurmaGlobal()">+ Criar Nova</button>
-                                    <button class="btn btn-sm btn-outline-secondary" type="button" onclick="vincularTurmaAoInstrutor()">Vincular</button>
-                                </div>
-                                <div id="turmasVinculadasLista" class="mt-2 text-muted small">Nenhuma turma vinculada.</div>
-                            </div>
-                            <div class="col-md-12">
-                                <label class="form-label small fw-bold">Mês/Ano de Referência</label>
-                                <input type="month" class="form-control form-control-sm" id="mesSelect" onchange="carregarAvaliacaoMes()">
-                            </div>
-                        </div>
-                    </div>
-                </div>
+        <!-- Painel 2: Parecer do Avaliador (Leitura do Documento) -->
+        <div class="panel">
+            <div class="panel-header">
+                <h2>Parecer do Avaliador (PDI)</h2>
+            </div>
+            <div class="parecer-text" id="displayParecer">
+                Selecione um instrutor na lista lateral para carregar os dados do PDI.
+            </div>
+        </div>
 
-                <div class="card">
-                    <div class="card-header"><i class="bi bi-ui-checks"></i> 2. Competências (Autoajustável)</div>
-                    <div class="card-body" id="competenciasContainer" style="font-size: 0.9rem;"></div>
-                    <div class="card-footer bg-white d-grid">
-                        <button class="btn btn-sm btn-senac" onclick="salvarAvaliacaoMensal(false)">Gravar Avaliação no Servidor</button>
-                    </div>
-                </div>
+        <!-- Painel 3: Gerador Automático de Feedbacks (Leva Grande) -->
+        <div class="panel feedback-generator">
+            <div class="panel-header">
+                <h2>Suporte ao Analista: Gerador de Feedback Automático</h2>
+            </div>
+            <p style="font-size: 0.9rem; color: var(--text-light); margin-top: 0;">Selecione a competência para gerar textos baseados nas diretrizes comportamentais.</p>
+            
+            <div class="controls">
+                <select id="compSelect">
+                    <option value="planejamento">1. Planejamento</option>
+                    <option value="foco_resultados">2. Foco em Resultados</option>
+                    <option value="visao_sistemica">3. Visão Sistêmica</option>
+                    <option value="foco_cliente">4. Foco no Cliente</option>
+                    <option value="comunicacao">5. Comunicação</option>
+                    <option value="solucao_problemas">6. Solução de Problemas</option>
+                    <option value="trabalho_equipe">7. Trabalho em Equipe</option>
+                </select>
             </div>
 
-            <!-- COLUNA DIREITA -->
-            <div class="col-lg-7">
-                <div class="card">
-                    <div class="card-header d-flex justify-content-between align-items-center">
-                        <span><i class="bi bi-journal-text"></i> Diário de Bordo e Tratativas</span>
-                        <button class="btn btn-sm btn-outline-info" onclick="abrirModalSugestoes()"><i class="bi bi-lightbulb"></i> Banco de Feedbacks</button>
-                    </div>
-                    <div class="card-body bg-light">
-                        <div class="row mb-2">
-                            <div class="col-md-3"><input type="date" id="logDate" class="form-control form-control-sm"></div>
-                            <div class="col-md-5">
-                                <select id="logType" class="form-select form-select-sm">
-                                    <option value="Alinhamento">Alinhamento</option>
-                                    <option value="Apontamento">Apontamento</option>
-                                    <option value="Feedback">Feedback</option>
-                                    <option value="Reunião">Reunião Pedagógica</option>
-                                    <option value="Elogio">Elogio/Reconhecimento</option>
-                                </select>
-                            </div>
-                            <div class="col-md-4">
-                                <select id="logStatusInitial" class="form-select form-select-sm border-warning">
-                                    <option value="Acompanhamento">Em Acompanhamento</option>
-                                    <option value="Ajustado">Ajustado</option>
-                                    <option value="Solucionado">Solucionado</option>
-                                </select>
-                            </div>
-                        </div>
-                        <div class="mb-2">
-                            <textarea class="form-control form-control-sm" id="logText" rows="3" placeholder="Descreva a situação. Se preferir, use o Banco de Feedbacks ao lado..."></textarea>
-                        </div>
-                        
-                        <div class="d-flex justify-content-between align-items-center mb-3">
-                            <div class="w-50">
-                                <label class="small text-muted mb-1"><i class="bi bi-download"></i> Arquivar Evidência Localmente (Opcional):</label>
-                                <input type="file" id="evidenciaUpload" class="form-control form-control-sm" accept=".pdf, .jpg, .jpeg, .png">
-                                <small class="text-secondary" style="font-size: 0.7em;">O arquivo será salvo no seu PC com o nome do instrutor.</small>
-                            </div>
-                            <button class="btn btn-primary btn-sm mt-3" onclick="processarEnvioLog()"><i class="bi bi-plus-circle"></i> Registrar no Histórico</button>
-                        </div>
-                        
-                        <div class="timeline mt-4" id="logsContainer" style="max-height: 400px; overflow-y: auto;">
-                            <p class="text-muted small">Selecione um instrutor...</p>
-                        </div>
-                    </div>
+            <div class="feedback-result">
+                <div class="feedback-box">
+                    <button class="copy-btn" onclick="copyText('fb-pos')">Copiar</button>
+                    <h4 class="positive">🎯 Ponto Forte (Reconhecimento)</h4>
+                    <p id="fb-pos">Selecione uma competência acima.</p>
                 </div>
-
-                <div class="card sticky-top" style="top: 10px;">
-                    <div class="card-header">
-                        <div class="d-flex justify-content-between align-items-center">
-                            <span><i class="bi bi-file-earmark-text"></i> Feedback e PDI Consolidado</span>
-                            <div>
-                                <button class="btn btn-sm btn-success me-1" onclick="salvarPdiManual()"><i class="bi bi-save"></i> Gravar</button>
-                                <button class="btn btn-sm btn-danger me-1" onclick="restaurarPdiAutomatico()"><i class="bi bi-arrow-counterclockwise"></i> Auto</button>
-                                <button class="btn btn-sm btn-dark" onclick="window.print()"><i class="bi bi-printer"></i> Imprimir</button>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="card-body" style="background-color: #f8f9fa;">
-                        <div id="pdiOutput" contenteditable="true" class="mini-pdi-box text-dark">
-                            <em>O relatório e os apontamentos de evidências aparecerão aqui.</em>
-                        </div>
-                    </div>
+                <div class="feedback-box">
+                    <button class="copy-btn" onclick="copyText('fb-dev')">Copiar</button>
+                    <h4 class="development">🌱 Oportunidade de Desenvolvimento (PDI)</h4>
+                    <p id="fb-dev">Selecione uma competência acima.</p>
                 </div>
             </div>
         </div>
+
     </div>
-</div>
 
-<!-- MODAL DE SUGESTÕES -->
-<div class="modal fade" id="sugestoesModal" tabindex="-1">
-  <div class="modal-dialog modal-lg">
-    <div class="modal-content">
-      <div class="modal-header bg-info text-dark">
-        <h5 class="modal-title"><i class="bi bi-lightbulb-fill"></i> Banco de Tratativas e Feedbacks - Padrão Senac</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-      </div>
-      <div class="modal-body bg-light">
-          <p class="small text-muted mb-3">Clique em uma sugestão para colá-la na tela de registros.</p>
-          <h6 class="fw-bold text-primary border-bottom pb-1">Marcas Formativas Senac</h6>
-          <div class="list-group mb-3">
-              <button type="button" class="list-group-item list-group-item-action py-1 small" onclick="usarFeedback(this.innerText)">Evidencia postura colaborativa (Marca Formativa), apoiando o desenvolvimento dos colegas de turma, mas necessita ampliar a integração de metodologias ativas no plano de aula.</button>
-              <button type="button" class="list-group-item list-group-item-action py-1 small" onclick="usarFeedback(this.innerText)">Atitude Empreendedora detectada: o instrutor propôs projeto integrador alinhado perfeitamente às demandas reais do mercado local.</button>
-              <button type="button" class="list-group-item list-group-item-action py-1 small" onclick="usarFeedback(this.innerText)">Necessário reforçar o Domínio Técnico-Científico nas práticas de laboratório, garantindo a segurança e os protocolos exigidos no Plano de Curso Senac.</button>
-          </div>
-          <h6 class="fw-bold text-success border-bottom pb-1">Planejamento e Diário de Classe</h6>
-          <div class="list-group mb-3">
-              <button type="button" class="list-group-item list-group-item-action py-1 small" onclick="usarFeedback(this.innerText)">Atraso recorrente na inserção de frequências e notas no sistema acadêmico. Prazo realinhado para atualização em até 48h após a aula.</button>
-              <button type="button" class="list-group-item list-group-item-action py-1 small" onclick="usarFeedback(this.innerText)">Planejamento de aula exemplar. O Plano de Curso está sendo rigorosamente seguido, com excelente encadeamento didático.</button>
-          </div>
-          <h6 class="fw-bold text-danger border-bottom pb-1">Acompanhamento e Solução de Problemas</h6>
-          <div class="list-group">
-              <button type="button" class="list-group-item list-group-item-action py-1 small" onclick="usarFeedback(this.innerText)">Alinhamento realizado referente à postura em sala de aula (reclamação de alunos). Solicitada maior escuta ativa e empatia na mediação de conflitos.</button>
-              <button type="button" class="list-group-item list-group-item-action py-1 small" onclick="usarFeedback(this.innerText)">Reunião Pedagógica: Definido plano de ação para recuperação paralela de alunos com defasagem técnica. Instrutor apresentou proposta viável.</button>
-          </div>
-      </div>
-    </div>
-  </div>
-</div>
-
-<script>
-    const firebaseConfig = {
-        apiKey: "AIzaSyBCjnhVbsDyFeRtfZepACO7NraVThqJaL4",
-        authDomain: "pdi-instrutores.firebaseapp.com",
-        projectId: "pdi-instrutores",
-        storageBucket: "pdi-instrutores.firebasestorage.app",
-        messagingSenderId: "817045522643",
-        appId: "1:817045522643:web:8c04f64167d236b397ac26"
-    };
-
-    if(!firebase.apps.length) firebase.initializeApp(firebaseConfig);
-    const auth = firebase.auth();
-    const db = firebase.firestore();
-
-    auth.onAuthStateChanged((user) => {
-        if (user) {
-            document.getElementById('loginOverlay').style.display = 'none';
-            document.getElementById('appContent').style.display = 'block';
-            inicializarSistema();
-        } else {
-            document.getElementById('loginOverlay').style.display = 'flex';
-            document.getElementById('appContent').style.display = 'none';
-        }
-    });
-
-    window.fazerLogin = function() {
-        const email = document.getElementById('emailInput').value;
-        const pass = document.getElementById('passwordInput').value;
-        auth.signInWithEmailAndPassword(email, pass).catch(() => {
-            document.getElementById('loginError').style.display = 'block';
-        });
-    }
-    window.fazerLogout = function() { auth.signOut(); }
-
-    let dataMap = {};
-    let globalTurmas = ["202500520", "202500413", "202500849", "202500853", "202500412", "202500369", "202500136"];
-    let evalHistory = {};
-    let tratativasLog = {};
-    let listenerBase = null; let listenerTratativas = null; let listenerAvaliacoes = null;
-
-    const competenciasInfo = [
-        { id: 'comp_plan', name: 'Planejamento e Organização', keys: ['prazo', 'atraso', 'planejamento', 'frequência', 'sistema', 'agenda'] },
-        { id: 'comp_foco', name: 'Foco em Resultados', keys: ['meta', 'resultado', 'indicador', 'entrega', 'notas'] },
-        { id: 'comp_visao', name: 'Visão Sistêmica', keys: ['processo', 'instituição', 'impacto', 'plano de curso'] },
-        { id: 'comp_cliente', name: 'Foco no Cliente', keys: ['aluno', 'cliente', 'atendimento', 'reclamação', 'escuta'] },
-        { id: 'comp_comun', name: 'Comunicação e Mediação', keys: ['comunica', 'conflito', 'clareza', 'didática', 'empatia'] },
-        { id: 'comp_prob', name: 'Solução de Problemas', keys: ['problema', 'solução', 'metodologias', 'práticas'] },
-        { id: 'comp_equipe', name: 'Trabalho em Equipe', keys: ['equipe', 'colega', 'colaborativa', 'ajuda'] }
-    ];
-
-    function inicializarSistema() {
-        const cont = document.getElementById('competenciasContainer');
-        cont.innerHTML = "";
-        competenciasInfo.forEach(c => {
-            cont.innerHTML += `
-            <div class="row competency-row align-items-center" id="row_${c.id}">
-                <div class="col-md-5 fw-bold">${c.name}</div>
-                <div class="col-md-7">
-                    <select class="form-select form-select-sm comp-select" id="${c.id}" onchange="salvarAvaliacaoMensal(true)">
-                        <option value="25">Não Atende (0 a 2,5)</option>
-                        <option value="50">Atende Parcialmente (2,5 a 5,0)</option>
-                        <option value="75" selected>Atende (5,0 a 8,0)</option>
-                        <option value="100">Atende com Excelência (Acima de 8,0)</option>
-                    </select>
-                </div>
-            </div>`;
-        });
-        
-        const hoje = new Date();
-        document.getElementById('mesSelect').value = `${hoje.getFullYear()}-${(hoje.getMonth() + 1).toString().padStart(2, '0')}`;
-        document.getElementById('logDate').value = hoje.toISOString().split('T')[0];
-
-        listenerBase = db.collection("configuracoes").doc("estrutura_instrutores").onSnapshot((doc) => {
-            if (doc.exists) { 
-                dataMap = doc.data().instrutores || {}; 
-                if(doc.data().turmasGlobais) globalTurmas = doc.data().turmasGlobais;
-            } else { 
-                dataMap = {"Ana Claudia": ["202500520"], "Bruna": ["202500849"], "Jean": ["202500369"]};
-                db.collection("configuracoes").doc("estrutura_instrutores").set({instrutores: dataMap, turmasGlobais: globalTurmas}); 
+    <script>
+        // --- 1. BASE DE DADOS (PDI Integrado e Mock para outros) ---
+        const database = {
+            "ana_claudia": {
+                id: "ana_claudia",
+                name: "Ana Claudia",
+                role: "Instrutora",
+                classes: ["Aprendizagem Comercial", "Turmas de Resgate"],
+                score: 8.13,
+                parecer: "Ana Claudia tem desempenho consistente e atende plenamente às expectativas institucionais. Destaca-se no Planejamento e Foco no Cliente, atuando com autonomia operacional e forte empatia no dia a dia com os estudantes. No Foco em Resultados e Solução de Problemas, realiza excelente monitoramento e atua com proatividade no resgate das turmas. Além disso, interage bem e de forma integrada com as áreas. Para o seu PDI, o foco será unir Trabalho em Equipe e Comunicação, estimulando-a a liderar o compartilhamento de suas boas práticas de monitoramento com os colegas. Na Visão Sistêmica, o desafio é conectá-la estrategicamente, compreendendo como o impacto positivo de suas ações de resgate reflete nos indicadores da instituição.",
+                chartData: [9, 8.5, 7, 9, 7.5, 8.5, 7.5] // Plan, FocoR, VisSist, FocoC, Com, SolProb, TrabEq
+            },
+            "joao_silva": {
+                id: "joao_silva",
+                name: "João Silva",
+                role: "Instrutor",
+                classes: ["Informática Básica", "Excel Avançado"],
+                score: 6.50,
+                parecer: "João domina o conteúdo técnico, mas precisa desenvolver o acompanhamento das turmas. O PDI focará em Planejamento para evitar atrasos nas rotinas sistêmicas.",
+                chartData: [5, 6, 6, 7, 8, 6, 7]
             }
-            carregarInstrutores(document.getElementById('instrutorSelect').value);
-            renderizarTurmasGlobais();
-        });
-    }
+        };
 
-    function carregarInstrutores(selecionado = "") {
-        const sel = document.getElementById('instrutorSelect');
-        sel.innerHTML = '<option value="" selected disabled>Selecione o Instrutor...</option>';
-        Object.keys(dataMap).sort().forEach(inst => { sel.innerHTML += `<option value="${inst}">${inst}</option>`; });
-        if (selecionado && dataMap[selecionado]) sel.value = selecionado;
-    }
-
-    function renderizarTurmasGlobais() {
-        const tSel = document.getElementById('turmaSelect');
-        tSel.innerHTML = '<option value="" selected disabled>Escolha a turma...</option>';
-        [...new Set(globalTurmas)].sort().forEach(t => tSel.innerHTML += `<option value="${t}">${t}</option>`);
-    }
-
-    window.selecionarInstrutor = function() {
-        const inst = document.getElementById('instrutorSelect').value;
-        if(!inst) return;
-        
-        atualizarTurmasVinculadasVisual(inst);
-        
-        if(listenerTratativas) listenerTratativas();
-        if(listenerAvaliacoes) listenerAvaliacoes();
-        document.getElementById('pdiOutput').innerHTML = `<p class="text-primary small">Sincronizando Banco de Dados...</p>`;
-
-        listenerTratativas = db.collection("tratativas").doc(inst).onSnapshot((doc) => {
-            tratativasLog[inst] = doc.exists ? (doc.data().logs || []) : [];
-            renderizarLogs();
-        });
-
-        listenerAvaliacoes = db.collection("avaliacoes").doc(inst).onSnapshot((doc) => {
-            evalHistory[inst] = doc.exists ? (doc.data().historico || {}) : {};
-            carregarAvaliacaoMes(); gerarRelatorioInterface();
-        });
-    }
-
-    function atualizarTurmasVinculadasVisual(inst) {
-        let div = document.getElementById('turmasVinculadasLista');
-        if(!dataMap[inst] || dataMap[inst].length === 0) { div.innerHTML = "Nenhuma turma."; return; }
-        div.innerHTML = dataMap[inst].map(t => `<span class="badge bg-secondary me-1 mb-1">${t} <i class="bi bi-x-circle ms-1" style="cursor:pointer;" onclick="removerVinculoTurma('${t}')"></i></span>`).join("");
-    }
-
-    window.salvarEstrutura = function() {
-        db.collection("configuracoes").doc("estrutura_instrutores").set({instrutores: dataMap, turmasGlobais: globalTurmas});
-    }
-
-    window.addTurmaGlobal = function() {
-        const nova = prompt("Digite o código da nova Turma Senac (ex: 202600123):");
-        if(nova && nova.trim() && !globalTurmas.includes(nova.trim())) {
-            globalTurmas.push(nova.trim()); salvarEstrutura();
-        }
-    }
-    window.vincularTurmaAoInstrutor = function() {
-        const inst = document.getElementById('instrutorSelect').value;
-        const turma = document.getElementById('turmaSelect').value;
-        if(!inst || !turma) return alert("Selecione instrutor e turma.");
-        if(!dataMap[inst].includes(turma)) { dataMap[inst].push(turma); salvarEstrutura(); atualizarTurmasVinculadasVisual(inst); }
-    }
-    window.removerVinculoTurma = function(turma) {
-        const inst = document.getElementById('instrutorSelect').value;
-        dataMap[inst] = dataMap[inst].filter(t => t !== turma); salvarEstrutura(); atualizarTurmasVinculadasVisual(inst);
-    }
-    window.addInstrutor = function() {
-        const nome = prompt("Nome do novo instrutor:");
-        if (nome && nome.trim() && !dataMap[nome.trim()]) { dataMap[nome.trim()] = []; salvarEstrutura(); carregarInstrutores(nome.trim()); selecionarInstrutor(); }
-    }
-
-    let modalSugestoes;
-    window.abrirModalSugestoes = function() {
-        if(!modalSugestoes) modalSugestoes = new bootstrap.Modal(document.getElementById('sugestoesModal'));
-        modalSugestoes.show();
-    }
-    window.usarFeedback = function(texto) {
-        let txt = document.getElementById('logText');
-        txt.value = (txt.value + " " + texto).trim();
-        modalSugestoes.hide();
-    }
-
-    // ==========================================
-    // DOWNLOAD LOCAL E REGISTRO NO FIRESTORE
-    // ==========================================
-    window.processarEnvioLog = function() {
-        const inst = document.getElementById('instrutorSelect').value;
-        const analista = document.getElementById('analistaSelect').value;
-        if(!inst || !analista) return alert("Selecione Instrutor e Analista.");
-        const text = document.getElementById('logText').value.trim(); 
-        if(!text) return alert("Digite o texto da tratativa.");
-        
-        let fileInput = document.getElementById('evidenciaUpload');
-        let file = fileInput.files[0];
-
-        if(file) {
-            // Cria um link temporário para forçar o download local do arquivo
-            const url = URL.createObjectURL(file);
-            const a = document.createElement('a');
-            a.href = url;
-            
-            // Renomeia o arquivo para manter a organização local
-            const dateStr = document.getElementById('logDate').value;
-            const cleanName = file.name.replace(/[^a-zA-Z0-9.-]/g, '_');
-            const newFileName = `Evidencia_PDI_${inst.replace(/\s+/g, '_')}_${dateStr}_${cleanName}`;
-            
-            a.download = newFileName;
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-            URL.revokeObjectURL(url);
-
-            // Salva apenas o nome do arquivo no Banco de Dados
-            salvarLogFinal(inst, analista, text, newFileName);
-            fileInput.value = ""; 
-        } else {
-            salvarLogFinal(inst, analista, text, null);
-        }
-    }
-
-    function salvarLogFinal(inst, analista, text, localFileName) {
-        if(!tratativasLog[inst]) tratativasLog[inst] = [];
-        tratativasLog[inst].push({ 
-            id: Date.now(), 
-            date: document.getElementById('logDate').value, 
-            analyst: analista, 
-            type: document.getElementById('logType').value, 
-            status: document.getElementById('logStatusInitial').value, 
-            text: text, 
-            evidenceName: localFileName 
-        });
-        tratativasLog[inst].sort((a, b) => new Date(b.date) - new Date(a.date));
-        
-        db.collection("tratativas").doc(inst).set({ logs: tratativasLog[inst] }, { merge: true }).then(() => {
-            document.getElementById('logText').value = "";
-            analisarImpactoLog(text, document.getElementById('logType').value);
-        });
-    }
-
-    function analisarImpactoLog(texto, tipo) {
-        let txt = texto.toLowerCase(); let modified = false;
-        let isNegative = tipo === 'Apontamento' || txt.includes('atraso') || txt.includes('falha');
-        let isPositive = tipo === 'Elogio' || txt.includes('parabéns') || txt.includes('exemplar');
-        competenciasInfo.forEach(rule => {
-            if(rule.keys.some(k => txt.includes(k))) {
-                let el = document.getElementById(rule.id); let val = parseInt(el.value);
-                if(isNegative && val > 25) { el.value = val === 100 ? 75 : (val === 75 ? 50 : 25); modified = true; destacarAlteracao(rule.id); }
-                else if(isPositive && val < 100) { el.value = val === 25 ? 50 : (val === 50 ? 75 : 100); modified = true; destacarAlteracao(rule.id); }
+        // --- 2. BANCO DE FEEDBACKS (A "Leva Grande" baseada nas imagens) ---
+        const feedbackBank = {
+            "planejamento": {
+                pos: "Destaco a forma estruturada e confiável com que você organiza suas demandas. Sua capacidade de antecipar riscos operacionais e priorizar com estratégia tem garantido entregas de alta qualidade, sem necessidade de acompanhamento constante.",
+                dev: "Notei que em situações recentes de aumento de demanda, houve dificuldade em reorganizar as prioridades, impactando os prazos. Nosso foco no PDI será estruturar uma rotina que permita maior previsibilidade e consistência nas entregas."
+            },
+            "foco_resultados": {
+                pos: "Sua atuação demonstra um foco excelente em resultados. Você não apenas executa as tarefas da sala de aula, mas acompanha os indicadores e busca ativamente alternativas para resolver obstáculos, gerando impacto real.",
+                dev: "Observei que há muito esforço na execução das aulas, mas precisamos fortalecer o acompanhamento dos resultados finais (como retenção de alunos). O objetivo é conectar suas atividades aos indicadores esperados para a função."
+            },
+            "visao_sistemica": {
+                pos: "É notável sua capacidade de compreender o contexto amplo da instituição. Você conecta as informações, entende o impacto das suas ações em outras áreas e utiliza isso para tomar decisões muito mais assertivas.",
+                dev: "Em algumas decisões recentes, o olhar ficou restrito apenas à rotina da própria turma. O desafio agora é exercitar a percepção dos impactos: como uma alteração no seu cronograma afeta o pedagógico e o atendimento comercial?"
+            },
+            "foco_cliente": {
+                pos: "Sua empatia e escuta ativa com os alunos criam um ambiente acolhedor e profissional. Você assume a responsabilidade pelas demandas deles e busca soluções com agilidade, gerando uma ótima experiência.",
+                dev: "Tivemos relatos de alunos que não tiveram suas necessidades compreendidas ou solucionadas com agilidade. Vamos trabalhar na capacidade de escuta ativa e na condução das situações difíceis com maior foco na experiência deles."
+            },
+            "comunicacao": {
+                pos: "Sua comunicação oral e escrita é excelente. Você transmite ideias com clareza, objetividade e mantém o alinhamento com a equipe, sempre demonstrando abertura ao diálogo e escuta verdadeira.",
+                dev: "Algumas mensagens transmitidas geraram ruídos e dúvidas na equipe recentemente. Precisamos focar em organizar melhor as informações antes de passá-las adiante, garantindo que o entendimento do outro seja exatamente o que você quis dizer."
+            },
+            "solucao_problemas": {
+                pos: "Gostaria de reconhecer seu equilíbrio e segurança na tomada de decisões. Você analisa as causas raízes dos problemas e propõe soluções consistentes e preventivas, atuando com grande autonomia.",
+                dev: "Percebo que a atuação frente aos problemas tem sido mais reativa. Precisamos desenvolver sua capacidade de analisar os riscos com antecedência e buscar alternativas antes que a situação exija ações urgentes de terceiros."
+            },
+            "trabalho_equipe": {
+                pos: "Você é uma peça fundamental na integração da equipe. Compartilha seus conhecimentos generosamente, apoia o desenvolvimento dos colegas e atua de forma conectada, elevando nossos resultados coletivos.",
+                dev: "Embora suas entregas individuais sejam boas, notei uma postura mais individualista no compartilhamento de aprendizados. O PDI vai focar em estimular sua participação ativa nas discussões de grupo e no apoio aos colegas."
             }
-        });
-        if(modified) salvarAvaliacaoMensal(true);
-    }
+        };
 
-    function destacarAlteracao(id) {
-        let row = document.getElementById('row_' + id);
-        row.classList.add('highlight'); setTimeout(() => row.classList.remove('highlight'), 2000);
-    }
+        // --- LÓGICA DO SISTEMA ---
+        let radarChartInstance = null;
 
-    window.deleteLog = function(id) {
-        if(!confirm("Excluir esta tratativa permanentemente?")) return;
-        const inst = document.getElementById('instrutorSelect').value;
-        tratativasLog[inst] = tratativasLog[inst].filter(log => log.id !== id);
-        db.collection("tratativas").doc(inst).set({ logs: tratativasLog[inst] }, { merge: true }).then(() => {
-            renderizarLogs(); gerarRelatorioInterface();
-        });
-    };
-
-    window.updateLogStatus = function(id, novoStatus) {
-        const inst = document.getElementById('instrutorSelect').value;
-        let log = tratativasLog[inst].find(l => l.id === id); if(!log) return;
-        log.status = novoStatus;
-        db.collection("tratativas").doc(inst).set({ logs: tratativasLog[inst] }, { merge: true }).then(() => gerarRelatorioInterface());
-    };
-
-    function renderizarLogs() {
-        const inst = document.getElementById('instrutorSelect').value;
-        const cont = document.getElementById('logsContainer');
-        cont.innerHTML = "";
-        if(!tratativasLog[inst] || tratativasLog[inst].length === 0) { cont.innerHTML = `<p class="text-muted small">Sem registros de tratativas para este instrutor.</p>`; return; }
-        
-        tratativasLog[inst].forEach(log => {
-            let anexoHtml = log.evidenceName ? `<br><span class="evidence-badge"><i class="bi bi-hdd"></i> Evidência salva no PC: <strong>${log.evidenceName}</strong></span>` : '';
-            
-            let selStatus = `<select class="log-status-select" onchange="updateLogStatus(${log.id}, this.value)">
-                <option value="Acompanhamento" ${log.status==='Acompanhamento'?'selected':''}>Em Acompanhamento</option>
-                <option value="Ajustado" ${log.status==='Ajustado'?'selected':''}>Ajustado</option>
-                <option value="Solucionado" ${log.status==='Solucionado'?'selected':''}>Solucionado</option>
-            </select>`;
-            
-            cont.innerHTML += `
-            <div class="log-item">
-                <button class="btn btn-sm btn-outline-danger position-absolute" style="top:10px; right:10px; padding: 2px 6px;" onclick="deleteLog(${log.id})"><i class="bi bi-trash"></i></button>
-                <div class="mb-2">
-                    <span class="log-date">${new Date(log.date + 'T00:00:00').toLocaleDateString('pt-BR')}</span>
-                    <span class="log-analyst"><i class="bi bi-person-circle"></i> ${log.analyst}</span>
-                    <span class="log-type">${log.type}</span>
-                    ${selStatus}
-                </div>
-                <div class="text-dark">${log.text}</div>
-                ${anexoHtml}
-            </div>`;
-        });
-    }
-
-    // ==========================================
-    // PDI CONSOLIDADO
-    // ==========================================
-    window.carregarAvaliacaoMes = function() {
-        const inst = document.getElementById('instrutorSelect').value;
-        const mes = document.getElementById('mesSelect').value;
-        if(!inst) return;
-        let scores = (evalHistory[inst] && evalHistory[inst][mes]) ? evalHistory[inst][mes].scores : [75,75,75,75,75,75,75];
-        competenciasInfo.forEach((c, index) => { document.getElementById(c.id).value = scores[index]; });
-        gerarRelatorioInterface();
-    }
-
-    window.salvarAvaliacaoMensal = function(silent = false) {
-        const inst = document.getElementById('instrutorSelect').value;
-        const mes = document.getElementById('mesSelect').value;
-        if(!inst) return;
-        let scores = []; let total = 0;
-        competenciasInfo.forEach(c => { let val = parseInt(document.getElementById(c.id).value); scores.push(val); total += val; });
-        let average = Math.round(total / 7);
-        
-        if(!evalHistory[inst]) evalHistory[inst] = {};
-        if(!evalHistory[inst][mes]) evalHistory[inst][mes] = {};
-        evalHistory[inst][mes].scores = scores; evalHistory[inst][mes].average = average;
-        
-        db.collection("avaliacoes").doc(inst).set({ historico: evalHistory[inst] }, { merge: true }).then(() => {
-            if(!silent) alert(`Avaliação salva! Score: ${average}%`);
-        });
-    }
-
-    window.salvarPdiManual = function() {
-        const inst = document.getElementById('instrutorSelect').value; const mes = document.getElementById('mesSelect').value;
-        if(!inst) return;
-        if(!evalHistory[inst]) evalHistory[inst] = {}; if(!evalHistory[inst][mes]) evalHistory[inst][mes] = { scores: [75,75,75,75,75,75,75], average: 75 };
-        evalHistory[inst][mes].pdiText = document.getElementById('pdiOutput').innerHTML;
-        db.collection("avaliacoes").doc(inst).set({ historico: evalHistory[inst] }, { merge: true }).then(() => alert("Edição do PDI salva no Banco!"));
-    }
-    window.restaurarPdiAutomatico = function() {
-        const inst = document.getElementById('instrutorSelect').value; const mes = document.getElementById('mesSelect').value;
-        if(!inst || !evalHistory[inst] || !evalHistory[inst][mes]) return;
-        delete evalHistory[inst][mes].pdiText;
-        db.collection("avaliacoes").doc(inst).set({ historico: evalHistory[inst] }, { merge: true }).then(() => gerarRelatorioInterface()); 
-    }
-
-    function gerarRelatorioInterface() {
-        const inst = document.getElementById('instrutorSelect').value;
-        if(!inst || !evalHistory[inst]) return;
-        const mesRef = document.getElementById('mesSelect').value;
-        if(!evalHistory[inst][mesRef]) return;
-        let histData = evalHistory[inst][mesRef]; 
-        
-        if (histData.pdiText) { document.getElementById('pdiOutput').innerHTML = histData.pdiText; return; }
-
-        let turmas = dataMap[inst] && dataMap[inst].length > 0 ? dataMap[inst].join(", ") : "Não informada";
-
-        let pdiHtml = `
-            <div style="text-align: center; margin-bottom: 20px;">
-                <h4 style="color:#004a8d; margin-bottom:0;">DOCUMENTO DE DESENVOLVIMENTO INDIVIDUAL (PDI)</h4>
-                <p class="text-muted small">Senac Paraná - Referência: ${mesRef}</p>
-            </div>
-            <table class="table table-bordered table-sm small">
-                <tr><td class="bg-light fw-bold" style="width: 25%">Instrutor(a):</td><td>${inst}</td></tr>
-                <tr><td class="bg-light fw-bold">Turmas Vinculadas:</td><td>${turmas}</td></tr>
-                <tr><td class="bg-light fw-bold">Score Global:</td><td class="fw-bold text-primary">${histData.average}%</td></tr>
-            </table>`;
-
-        let logsAtivos = (tratativasLog[inst] || []).filter(l => l.status === 'Acompanhamento' || l.status === 'Ajustado');
-        let logsSolucionados = (tratativasLog[inst] || []).filter(l => l.status === 'Solucionado');
-        let arquivos = (tratativasLog[inst] || []).filter(l => l.evidenceName);
-
-        pdiHtml += `<h5 class="pdi-section-title"><i class="bi bi-bullseye"></i> Metas e Acompanhamentos Ativos</h5>`;
-        if(logsAtivos.length > 0) {
-            pdiHtml += `<ul class="small text-danger" style="padding-left: 20px;">`;
-            logsAtivos.forEach(l => pdiHtml += `<li><strong>[${new Date(l.date+'T00:00:00').toLocaleDateString()}]</strong> ${l.text} (${l.status})</li>`);
-            pdiHtml += `</ul>`;
-        } else { pdiHtml += `<p class="small text-success">Nenhuma pendência crítica ou ponto em acompanhamento.</p>`; }
-
-        if(logsSolucionados.length > 0) {
-            pdiHtml += `<h5 class="pdi-section-title"><i class="bi bi-check2-circle"></i> Evolução / Solucionados</h5><ul class="small text-success" style="padding-left: 20px;">`;
-            logsSolucionados.forEach(l => pdiHtml += `<li><strong>[${new Date(l.date+'T00:00:00').toLocaleDateString()}]</strong> ${l.text}</li>`);
-            pdiHtml += `</ul>`;
+        function initApp() {
+            renderInstructorList();
+            setupFeedbackListener();
+            // Inicia com a Ana Claudia selecionada por padrão
+            selectInstructor('ana_claudia'); 
+            document.getElementById('compSelect').dispatchEvent(new Event('change'));
         }
 
-        if(arquivos.length > 0) {
-            pdiHtml += `<h5 class="pdi-section-title"><i class="bi bi-folder-symlink"></i> Evidências Físicas / Digitais (Arquivadas Localmente)</h5><ul class="small text-secondary" style="padding-left: 20px;">`;
-            arquivos.forEach(l => pdiHtml += `<li class="mb-1"><i class="bi bi-hdd"></i> Arquivo: <strong>${l.evidenceName}</strong> <br><span style="font-size: 0.8em;">(Inserido no sistema em: ${new Date(l.date+'T00:00:00').toLocaleDateString()})</span></li>`);
-            pdiHtml += `</ul>`;
+        function renderInstructorList() {
+            const listObj = document.getElementById('instructorList');
+            listObj.innerHTML = '';
+            
+            Object.values(database).forEach(inst => {
+                const tags = inst.classes.map(c => `<span class="class-tag">${c}</span>`).join('');
+                
+                const card = document.createElement('div');
+                card.className = `instructor-card`;
+                card.id = `card-${inst.id}`;
+                card.onclick = () => selectInstructor(inst.id);
+                card.innerHTML = `
+                    <h3>${inst.name}</h3>
+                    <p>${inst.role}</p>
+                    <div class="class-tags">${tags}</div>
+                `;
+                listObj.appendChild(card);
+            });
         }
 
-        pdiHtml += `<div style="margin-top: 40px; border-top: 1px solid #ccc; padding-top: 10px; text-align: center; font-size: 0.8rem; color: #666;">Documento gerado pelo Sistema Vivo de Gestão PDI Senac - Uso Interno e Confidencial</div>`;
-        document.getElementById('pdiOutput').innerHTML = pdiHtml;
-    }
-</script>
+        function selectInstructor(id) {
+            // Remove active
+            document.querySelectorAll('.instructor-card').forEach(c => c.classList.remove('active'));
+            document.getElementById(`card-${id}`).classList.add('active');
+
+            const data = database[id];
+            
+            // Atualiza Textos
+            document.getElementById('currentInstructorName').innerText = data.name;
+            
+            // Formata Pontuação
+            let scoreStr = data.score.toFixed(2).replace('.', ',');
+            document.getElementById('displayScore').innerText = scoreStr;
+            
+            // Escala e Cor
+            const scaleDiv = document.getElementById('displayScale');
+            if (data.score >= 8.01) {
+                scaleDiv.innerText = "Supera as expectativas";
+                scaleDiv.className = "score-scale scale-supera";
+            } else if (data.score >= 5.01) {
+                scaleDiv.innerText = "Atende as expectativas";
+                scaleDiv.className = "score-scale scale-atende";
+            } else {
+                scaleDiv.innerText = "Requer Desenvolvimento";
+                scaleDiv.className = "score-scale";
+                scaleDiv.style.background = "#fee2e2";
+                scaleDiv.style.color = "#991b1b";
+            }
+
+            // Atualiza Parecer
+            document.getElementById('displayParecer').innerText = data.parecer;
+
+            // Atualiza Gráfico
+            updateChart(data.name, data.chartData);
+        }
+
+        function updateChart(name, dataArr) {
+            const ctx = document.getElementById('radarChart').getContext('2d');
+            
+            if (radarChartInstance) {
+                radarChartInstance.destroy();
+            }
+
+            radarChartInstance = new Chart(ctx, {
+                type: 'radar',
+                data: {
+                    labels: ['Planejamento', 'Foco em Resultados', 'Visão Sistêmica', 'Foco no Cliente', 'Comunicação', 'Solução de Probl.', 'Trab. Equipe'],
+                    datasets: [{
+                        label: `Desempenho: ${name}`,
+                        data: dataArr,
+                        backgroundColor: 'rgba(243, 112, 33, 0.2)',
+                        borderColor: 'rgba(243, 112, 33, 1)',
+                        pointBackgroundColor: '#004a8f',
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        r: {
+                            angleLines: { color: '#e0e0e0' },
+                            grid: { color: '#e0e0e0' },
+                            pointLabels: { font: { size: 11 }, color: '#666' },
+                            ticks: { min: 0, max: 10, stepSize: 2, display: false }
+                        }
+                    },
+                    plugins: { legend: { display: false } }
+                }
+            });
+        }
+
+        function setupFeedbackListener() {
+            document.getElementById('compSelect').addEventListener('change', function(e) {
+                const comp = e.target.value;
+                document.getElementById('fb-pos').innerText = feedbackBank[comp].pos;
+                document.getElementById('fb-dev').innerText = feedbackBank[comp].dev;
+            });
+        }
+
+        function copyText(elementId) {
+            const text = document.getElementById(elementId).innerText;
+            navigator.clipboard.writeText(text).then(() => {
+                alert("Texto copiado para a área de transferência!");
+            });
+        }
+
+        // Inicia a aplicação
+        window.onload = initApp;
+
+    </script>
 </body>
 </html>
