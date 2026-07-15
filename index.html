@@ -4,12 +4,19 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sistema Vivo de Gestão de PDI - Senac 2026</title>
+    
     <!-- CSS Bootstrap e Icones -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
+    
     <!-- Scripts Chart.js e SheetJS -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    
+    <!-- SDKs do Firebase (Versão 10.x Compat) -->
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+
     <style>
         body { background-color: #f4f6f9; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
         .header-senac { background-color: #004a8d; color: white; padding: 20px 0; border-bottom: 4px solid #f2a900; }
@@ -45,7 +52,7 @@
 
 <div class="header-senac text-center mb-4 no-print">
     <h2>Sistema Vivo de Gestão de PDI - Senac 2026</h2>
-    <p class="mb-0">Avaliações Dinâmicas, Base Histórica e Relatórios Evolutivos Integrados</p>
+    <p class="mb-0">Avaliações Dinâmicas, Base Histórica e Trabalho Simultâneo Online (Firebase)</p>
 </div>
 
 <div class="container-fluid px-4 no-print">
@@ -60,7 +67,7 @@
                         <div class="card-body bg-light">
                             <select class="form-select border-primary" id="analistaSelect">
                                 <option value="" selected disabled>Selecione o(a) Analista...</option>
-                                <option value="Bruna">Bruna</option>
+                                <option value="Bruna Baldan">Bruna Baldan</option>
                                 <option value="Bianca">Bianca</option>
                                 <option value="Mariana">Mariana</option>
                                 <option value="Michel">Michel</option>
@@ -74,7 +81,7 @@
                         <div class="card-header bg-success text-white"><i class="bi bi-file-earmark-excel"></i> Importar Avaliação Base</div>
                         <div class="card-body bg-light">
                             <input class="form-control form-control-sm" type="file" id="excelUpload" accept=".xlsx, .xls, .xlsm">
-                            <small class="text-muted">Mapeia com precisão para evitar nomes duplicados.</small>
+                            <small class="text-muted">Mapeia sem duplicar. Salva online automaticamente.</small>
                         </div>
                     </div>
                 </div>
@@ -89,7 +96,7 @@
                             <label class="form-label">Instrutor(a)</label>
                             <div class="input-group">
                                 <select class="form-select" id="instrutorSelect" onchange="selecionarInstrutor()">
-                                    <option value="" selected disabled>Selecione...</option>
+                                    <option value="" selected disabled>Carregando Base de Dados...</option>
                                 </select>
                                 <button class="btn btn-outline-success" type="button" onclick="addInstrutor()" title="Adicionar">+</button>
                                 <button class="btn btn-outline-danger" type="button" onclick="delInstrutor()" title="Remover">-</button>
@@ -117,13 +124,13 @@
             <div class="card">
                 <div class="card-header d-flex justify-content-between align-items-center">
                     <span><i class="bi bi-ui-checks"></i> 2. Avaliação de Competências (Autoajustável)</span>
-                    <span class="badge bg-secondary" title="As notas se ajustam automaticamente de acordo com as tratativas informadas.">Integração Ativa <i class="bi bi-lightning-charge"></i></span>
+                    <span class="badge bg-secondary" title="As notas se ajustam automaticamente e salvam no Firebase.">Integração Ativa <i class="bi bi-cloud-check"></i></span>
                 </div>
                 <div class="card-body" id="competenciasContainer">
                     <!-- Javascript injetará as competências aqui -->
                 </div>
                 <div class="card-footer bg-white border-top-0 d-grid">
-                    <button class="btn btn-senac" onclick="salvarAvaliacaoMensal(false)">Gravar Avaliação e Atualizar PDI</button>
+                    <button class="btn btn-senac" onclick="salvarAvaliacaoMensal(false)">Gravar Avaliação no Servidor e Atualizar PDI</button>
                 </div>
             </div>
 
@@ -153,10 +160,10 @@
                     <div class="mb-3">
                         <textarea class="form-control" id="logText" rows="2" placeholder="Descreva a tratativa. O sistema irá ler este texto para ajustar automaticamente as competências..."></textarea>
                     </div>
-                    <button class="btn btn-outline-primary btn-sm mb-3 w-100" onclick="adicionarLog()"><i class="bi bi-plus-circle"></i> Registrar e Autoajustar PDI</button>
+                    <button class="btn btn-outline-primary btn-sm mb-3 w-100" onclick="adicionarLog()"><i class="bi bi-plus-circle"></i> Registrar no Banco e Autoajustar PDI</button>
                     
                     <div id="logsContainer" style="max-height: 250px; overflow-y: auto; border-top: 1px solid #eee; padding-top: 10px;">
-                        <p class="text-muted small">Selecione um instrutor para ver o histórico.</p>
+                        <p class="text-muted small">Selecione um instrutor para sincronizar o histórico.</p>
                     </div>
                 </div>
             </div>
@@ -192,7 +199,7 @@
                 </div>
                 <div class="card-body">
                     <div id="pdiOutput" class="mini-pdi-box text-muted" style="max-height: 500px; overflow-y: auto;">
-                        <em>O relatório se moldará automaticamente ao selecionar o instrutor ou inserir tratativas.</em>
+                        <em>O relatório se moldará automaticamente ao sincronizar o banco.</em>
                     </div>
                 </div>
             </div>
@@ -203,22 +210,34 @@
 
 <div id="printableReport" class="container d-none no-print" style="margin-top: 20px;"></div>
 
-<style>
-    @media print {
-        #printableReport { display: block !important; }
-        .header-senac, .no-print { display: none !important; }
-        body { background: white; padding: 0; }
-        .print-header { border-bottom: 3px solid #004a8d; padding-bottom: 10px; margin-bottom: 20px; }
-        .print-title { color: #004a8d; font-weight: bold; }
-        .print-section { margin-bottom: 30px; }
-        .print-section h5 { background: #f2a900; color: #fff; padding: 5px 10px; border-radius: 4px; }
-        .table-print { width: 100%; border-collapse: collapse; margin-bottom: 20px; font-size: 0.9em; }
-        .table-print th, .table-print td { border: 1px solid #ddd; padding: 8px; text-align: left; }
-        .table-print th { background-color: #f8f9fa; }
-    }
-</style>
-
 <script>
+    // ==========================================
+    // CONFIGURAÇÃO DO FIREBASE
+    // ==========================================
+    const firebaseConfig = {
+        apiKey: "AIzaSyBCjnhVbsDyFeRtfZepACO7NraVThqJaL4",
+        authDomain: "pdi-instrutores.firebaseapp.com",
+        projectId: "pdi-instrutores",
+        storageBucket: "pdi-instrutores.firebasestorage.app",
+        messagingSenderId: "817045522643",
+        appId: "1:817045522643:web:8c04f64167d236b397ac26"
+    };
+
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
+
+    // ==========================================
+    // VARIÁVEIS GLOBAIS
+    // ==========================================
+    let dataMap = {};
+    let evalHistory = {};
+    let tratativasLog = {};
+    let lineChart;
+    
+    // Listeners do Firebase para remover caso mude de instrutor
+    let listenerTratativas = null;
+    let listenerAvaliacoes = null;
+
     const originalDataMap = {
       "Ana Claudia": ["202500520", "202500728", "202500856", "202500859", "202500869", "202500871 - V", "202500919", "202501228", "202501231", "202600001", "202600024", "202600025", "202600027", "202600160", "202600173", "202600179", "202600217", "202600266", "202600547", "Agosto super 3", "Agosto vendas 2", "Setembro_ADM_3", "Setembro_Super_4", "Setembro_Vendas 3", "Setembro_Vendas 6"],
       "Ana Maria": ["202500413", "202500414", "202500519", "202500521", "202500848 - V", "202500854", "202500857", "202500858", "202501023", "202501225", "202501230", "202501231", "202600161 - V", "202600163", "202600495", "202600546", "Agosto adm 2", "Agosto adm 3", "Agosto super 2", "Agosto vendas 1", "Agosto vendas 2", "Setembro_Vendas 3", "Setembro_Vendas 4"],
@@ -232,10 +251,6 @@
       "Tatiane": ["202500369", "202500412", "202500748", "202500855 - V", "202500856", "202500860", "202500919", "202500997", "202501230", "202600156", "202600178", "202600179", "202600265", "202600503", "202600542 - V", "202600544", "202600563", "Agosto vendas 1", "Setembro_ADM_2", "Setembro_ADM_3", "Setembro_ADM_4", "Setembro_ADM_5", "Setembro_ADM_Técnica", "Setembro_Vendas 5"],
       "Viviane": ["202500136", "202500849", "202500850", "202500853", "202500857", "202500866", "202500867", "202500919", "202500997", "202600163", "202600216", "202600217", "202600263", "202600266", "202600545", "202600566", "Adm_Sescoop_2_Setembro", "Agosto adm 2", "Agosto super 3", "Setembro_Super_2", "Setembro_Super_3"]
     };
-
-    let dataMap = JSON.parse(localStorage.getItem('senacPdiDataMap')) || JSON.parse(JSON.stringify(originalDataMap));
-    let evalHistory = JSON.parse(localStorage.getItem('senacPdiHistory')) || {};
-    let tratativasLog = JSON.parse(localStorage.getItem('senacPdiTratativas')) || {};
 
     const competenciasInfo = [
         { id: 'comp_plan', name: 'Planejamento', keys: ['prazo', 'atraso', 'planejamento', 'organiza', 'esquecimento', 'agenda'],
@@ -296,10 +311,25 @@
         }
     ];
 
-    let lineChart;
-
+    // ==========================================
+    // INICIALIZAÇÃO DA INTERFACE & BANCO
+    // ==========================================
     window.onload = () => {
-        carregarInstrutores();
+        // Inicializa o Listener principal do Firebase para a Estrutura Base
+        db.collection("configuracoes").doc("estrutura_instrutores").onSnapshot((doc) => {
+            if (doc.exists) {
+                dataMap = doc.data();
+            } else {
+                // Se for a primeira vez rodando, inicializa o banco com os dados estruturais
+                db.collection("configuracoes").doc("estrutura_instrutores").set(originalDataMap);
+                dataMap = originalDataMap;
+            }
+            
+            let currentSelection = document.getElementById('instrutorSelect').value;
+            carregarInstrutores(currentSelection);
+        });
+
+        // Configura Tela HTML
         const cont = document.getElementById('competenciasContainer');
         competenciasInfo.forEach(c => {
             cont.innerHTML += `
@@ -315,6 +345,7 @@
                 </div>
             </div>`;
         });
+        
         initChart();
         const hoje = new Date();
         const mesStr = (hoje.getMonth() + 1).toString().padStart(2, '0');
@@ -326,15 +357,58 @@
         const sel = document.getElementById('instrutorSelect');
         sel.innerHTML = '<option value="" selected disabled>Selecione...</option>';
         Object.keys(dataMap).sort().forEach(inst => { sel.innerHTML += `<option value="${inst}">${inst}</option>`; });
-        if (selecionado && dataMap[selecionado]) sel.value = selecionado;
+        
+        if (selecionado && dataMap[selecionado]) {
+            sel.value = selecionado;
+        }
     }
 
+    // ==========================================
+    // SELEÇÃO E LISTENERS EM TEMPO REAL
+    // ==========================================
     function selecionarInstrutor() {
+        const inst = document.getElementById('instrutorSelect').value;
+        if(!inst) return;
+        
         atualizarTurmas();
-        carregarAvaliacaoMes(); // Tenta puxar as notas do mês pro formulário, ou da última avaliação
-        carregarHistoricoGrafico();
-        renderizarLogs();
-        gerarRelatorioInterface(); // Em vez de limpar, já mostra o consolidado vivo
+        
+        // Remove ouvintes do instrutor anterior
+        if(listenerTratativas) listenerTratativas();
+        if(listenerAvaliacoes) listenerAvaliacoes();
+
+        document.getElementById('pdiOutput').innerHTML = `<p class="text-primary small"><i class="bi bi-arrow-repeat spin"></i> Sincronizando dados online...</p>`;
+
+        // Listener Tratativas
+        listenerTratativas = db.collection("tratativas").doc(inst).onSnapshot((doc) => {
+            if (doc.exists) {
+                tratativasLog[inst] = doc.data().logs || [];
+            } else {
+                tratativasLog[inst] = [];
+            }
+            renderizarLogs();
+            carregarHistoricoGrafico();
+        });
+
+        // Listener Avaliacoes (Histórico de Notas)
+        listenerAvaliacoes = db.collection("avaliacoes").doc(inst).onSnapshot((doc) => {
+            if (doc.exists) {
+                evalHistory[inst] = doc.data().historico || {};
+            } else {
+                evalHistory[inst] = {};
+            }
+            carregarAvaliacaoMes(); 
+            carregarHistoricoGrafico();
+            gerarRelatorioInterface();
+        });
+    }
+
+    // ==========================================
+    // GRAVAÇÃO DA BASE DE DADOS
+    // ==========================================
+    function salvarDataMapNoBanco() {
+        db.collection("configuracoes").doc("estrutura_instrutores").set(dataMap)
+        .then(() => console.log("Sincronizado!"))
+        .catch((error) => console.error("Erro", error));
     }
 
     function atualizarTurmas() {
@@ -350,16 +424,19 @@
     function addInstrutor() {
         const nome = prompt("Nome do novo instrutor:");
         if (nome && nome.trim() && !dataMap[nome.trim()]) {
-            dataMap[nome.trim()] = []; localStorage.setItem('senacPdiDataMap', JSON.stringify(dataMap));
+            dataMap[nome.trim()] = []; 
+            salvarDataMapNoBanco();
             carregarInstrutores(nome.trim()); selecionarInstrutor();
         }
     }
 
     function delInstrutor() {
         const inst = document.getElementById('instrutorSelect').value;
-        if(inst && confirm(`Excluir ${inst}? Dados de turmas serão perdidos.`)) {
-            delete dataMap[inst]; localStorage.setItem('senacPdiDataMap', JSON.stringify(dataMap));
-            carregarInstrutores(); selecionarInstrutor();
+        if(inst && confirm(`Excluir ${inst}? Dados de turmas serão perdidos no banco.`)) {
+            delete dataMap[inst]; 
+            salvarDataMapNoBanco();
+            carregarInstrutores();
+            document.getElementById('pdiOutput').innerHTML = "<em>Selecione um instrutor...</em>";
         }
     }
 
@@ -369,7 +446,7 @@
         const turma = prompt(`Nova turma para ${inst}:`);
         if (turma && !dataMap[inst].includes(turma.trim())) {
             dataMap[inst].push(turma.trim()); dataMap[inst].sort();
-            localStorage.setItem('senacPdiDataMap', JSON.stringify(dataMap));
+            salvarDataMapNoBanco();
             atualizarTurmas(); document.getElementById('turmaSelect').value = turma.trim();
         }
     }
@@ -379,11 +456,13 @@
         const turma = document.getElementById('turmaSelect').value;
         if(inst && turma && confirm(`Excluir turma ${turma}?`)) {
             dataMap[inst] = dataMap[inst].filter(t => t !== turma);
-            localStorage.setItem('senacPdiDataMap', JSON.stringify(dataMap)); atualizarTurmas();
+            salvarDataMapNoBanco(); atualizarTurmas();
         }
     }
 
-    // Leitura Excel aprimorada (Evitar Duplicados)
+    // ==========================================
+    // IMPORTAÇÃO DE EXCEL E AUTOAJUSTE
+    // ==========================================
     document.getElementById('excelUpload').addEventListener('change', function(e) {
         var file = e.target.files[0];
         if(!file) return;
@@ -422,32 +501,33 @@
         }
 
         if(rawName) {
-            // Busca Inteligente para não duplicar (ex: "Ana Claudia" vs "Ana Claudia da Silva")
             let matchedKey = Object.keys(dataMap).find(k => rawName.toLowerCase().includes(k.toLowerCase()) || k.toLowerCase().includes(rawName.toLowerCase()));
             let instrutorEncontrado = matchedKey ? matchedKey : rawName;
 
             if(!matchedKey) {
                 dataMap[instrutorEncontrado] = [];
-                localStorage.setItem('senacPdiDataMap', JSON.stringify(dataMap));
+                salvarDataMapNoBanco();
                 carregarInstrutores(instrutorEncontrado);
             } else {
                 document.getElementById('instrutorSelect').value = instrutorEncontrado;
             }
+            
+            // Aguarda a seleção instanciar os listeners online
             selecionarInstrutor();
+            
+            setTimeout(() => {
+                Object.keys(notas).forEach(id => {
+                    if(document.getElementById(id)) document.getElementById(id).value = notas[id];
+                });
+                document.getElementById('logType').value = "Avaliação Base";
+                document.getElementById('logText').value = "Importação automática de Planilha Oficial de PDI.";
+                adicionarLog(true);
+                salvarAvaliacaoMensal(true);
+                alert("Planilha processada! Base Inicial registrada online sem duplicidades.");
+            }, 1000); // tempo para o listener responder
         }
-
-        Object.keys(notas).forEach(id => {
-            if(document.getElementById(id)) document.getElementById(id).value = notas[id];
-        });
-
-        document.getElementById('logType').value = "Avaliação Base";
-        document.getElementById('logText').value = "Importação automática de Planilha Oficial de PDI.";
-        adicionarLog(true);
-        salvarAvaliacaoMensal(true);
-        alert("Planilha processada! Base Inicial registrada sem duplicidades.");
     }
 
-    // Autoajuste do PDI (Sistema Vivo)
     function analisarImpactoLog(texto, tipo) {
         let txt = texto.toLowerCase();
         let currentScores = {};
@@ -502,17 +582,17 @@
         });
         
         tratativasLog[inst].sort((a, b) => new Date(b.date) - new Date(a.date));
-        localStorage.setItem('senacPdiTratativas', JSON.stringify(tratativasLog));
         
-        // Autoajuste do formulário (Sistema Vivo)
-        if(!silent) analisarImpactoLog(text.trim(), type);
-
-        document.getElementById('logText').value = "";
-        renderizarLogs();
-        carregarHistoricoGrafico(); // Atualiza gráfico caso esteja no filtro de 'tratativas'
-
-        if(!silent) alert("Tratativa gravada no Dossiê.");
-        gerarRelatorioInterface();
+        // Salva Tratativa no Firebase
+        db.collection("tratativas").doc(inst).set({ logs: tratativasLog[inst] }, { merge: true })
+        .then(() => {
+            if(!silent) alert("Tratativa gravada no Dossiê Online.");
+            document.getElementById('logText').value = "";
+            
+            // Verifica o impacto do texto no painel
+            if(!silent) analisarImpactoLog(text.trim(), type);
+        })
+        .catch(err => console.error(err));
     }
 
     function renderizarLogs() {
@@ -536,7 +616,6 @@
         });
     }
 
-    // Gráfico com Filtros Inteligentes
     function initChart() {
         const ctx = document.getElementById('lineChart').getContext('2d');
         lineChart = new Chart(ctx, {
@@ -565,14 +644,12 @@
             dadosEixoY = meses.map(m => hist[m].average);
         } else if (filtro === 'tratativas') {
             lineChart.data.datasets[0].label = 'Qtd. de Tratativas/Apontamentos';
-            configY = { beginAtZero: true, suggestedMax: 5 }; // Não limita a 100
+            configY = { beginAtZero: true, suggestedMax: 5 };
             dadosEixoY = meses.map(m => {
                 if(!tratativasLog[inst]) return 0;
-                // Conta quantas tratativas ocorreram no mês 'YYYY-MM'
                 return tratativasLog[inst].filter(log => log.date.startsWith(m)).length;
             });
         } else {
-            // É uma competência específica
             let compIndex = competenciasInfo.findIndex(c => c.id === filtro);
             let compName = competenciasInfo[compIndex].name;
             lineChart.data.datasets[0].label = `Desempenho: ${compName} (%)`;
@@ -590,14 +667,12 @@
         const mes = document.getElementById('mesSelect').value;
         if(!inst) return;
 
-        // Se tem dados do mes exato, puxa
         if(evalHistory[inst] && evalHistory[inst][mes]) {
             let scores = evalHistory[inst][mes].scores;
             competenciasInfo.forEach((c, index) => {
                 document.getElementById(c.id).value = scores[index] || 75;
             });
         } else {
-            // Se não tem, tenta pegar a última avaliação como baseline
             if(evalHistory[inst]) {
                 const meses = Object.keys(evalHistory[inst]).sort();
                 if(meses.length > 0) {
@@ -626,23 +701,23 @@
 
         if(!evalHistory[inst]) evalHistory[inst] = {};
         evalHistory[inst][mes] = { scores: scores, average: average };
-        localStorage.setItem('senacPdiHistory', JSON.stringify(evalHistory));
-
-        carregarHistoricoGrafico();
-        gerarRelatorioInterface();
-        if(!silent) alert(`Avaliação de ${mes} salva. Score: ${average}%`);
+        
+        // Salva Avaliação no Firebase
+        db.collection("avaliacoes").doc(inst).set({ historico: evalHistory[inst] }, { merge: true })
+        .then(() => {
+            if(!silent) alert(`Avaliação de ${mes} salva no servidor. Score: ${average}%`);
+        })
+        .catch(err => console.error(err));
     }
 
-    // PDI Persistente e Dinâmico
     function gerarRelatorioInterface() {
         const inst = document.getElementById('instrutorSelect').value;
         const mesSelecionado = document.getElementById('mesSelect').value;
         if(!inst) return;
 
         let pdiHtml = `<h5>Relatório Consolidado Vivo - ${inst}</h5><hr>`;
-
         let mesReferencia = mesSelecionado;
-        // Se o mês selecionado não tem dados, pega o último gravado
+        
         if(!evalHistory[inst] || !evalHistory[inst][mesSelecionado]) {
              if(evalHistory[inst]) {
                  let meses = Object.keys(evalHistory[inst]).sort();
@@ -676,7 +751,7 @@
                 pdiHtml += `<p class="text-success small">Instrutor(a) apresenta excelência global neste ciclo.</p>`;
             }
         } else {
-            pdiHtml += `<p class="text-danger small">Nenhuma avaliação numérica salva para este instrutor.</p>`;
+            pdiHtml += `<p class="text-danger small">Nenhuma avaliação numérica salva no banco para este instrutor.</p>`;
         }
 
         document.getElementById('pdiOutput').innerHTML = pdiHtml;
