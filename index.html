@@ -9,11 +9,12 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
     
-    <!-- Scripts Chart.js e SheetJS -->
+    <!-- Scripts Chart.js, SheetJS, e Bootstrap Bundle -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     
-    <!-- SDKs do Firebase (Firestore e Auth) -->
+    <!-- SDKs do Firebase (Firestore e Auth APENAS) -->
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
@@ -21,26 +22,40 @@
     <style>
         body { background-color: #f4f6f9; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
         .header-senac { background-color: #004a8d; color: white; padding: 20px 0; border-bottom: 4px solid #f2a900; }
-        .card { border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); border: none; margin-bottom: 20px; }
+        .card { border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); border: none; margin-bottom: 20px; }
         .card-header { background-color: #ffffff; border-bottom: 1px solid #eee; font-weight: bold; color: #004a8d; font-size: 1.1rem; }
         .competency-row { padding: 12px 0; border-bottom: 1px dashed #eee; transition: background-color 0.5s ease; }
         .competency-row.highlight { background-color: #e8f4f8; }
-        .competency-row:last-child { border-bottom: none; }
         .btn-senac { background-color: #f2a900; color: #fff; font-weight: bold; border: none; }
         .btn-senac:hover { background-color: #d19200; color: #fff; }
-        .mini-pdi-box { background-color: #fff; padding: 20px; border-left: 5px solid #004a8d; border-radius: 5px; font-size: 0.95em; line-height: 1.6; }
+        
+        /* Design do PDI Estilo Documento */
+        .mini-pdi-box { background-color: #fff; padding: 30px; box-shadow: 0 0 15px rgba(0,0,0,0.05); border: 1px solid #ddd; border-top: 5px solid #004a8d; border-radius: 4px; font-size: 0.95em; line-height: 1.6; transition: all 0.3s ease; }
+        .mini-pdi-box:focus { outline: none; border-color: #f2a900; background-color: #fafbfc; }
+        .pdi-section-title { color: #004a8d; font-weight: bold; border-bottom: 1px solid #eee; padding-bottom: 5px; margin-top: 15px; margin-bottom: 10px; }
+        
         .chart-container { position: relative; height: 300px; width: 100%; }
         select, textarea, input { border-color: #ced4da; box-shadow: none !important; }
         
-        /* Tela de Login Overlay */
-        #loginOverlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #004a8d; z-index: 9999; display: flex; align-items: center; justify-content: center; }
-        .login-box { background: white; padding: 40px; border-radius: 10px; width: 100%; max-width: 400px; text-align: center; box-shadow: 0 10px 25px rgba(0,0,0,0.2); }
-        .login-box img { width: 120px; margin-bottom: 20px; }
+        /* Timeline de Tratativas */
+        .timeline { position: relative; border-left: 2px solid #e9ecef; margin-left: 15px; padding-left: 20px; }
+        .log-item { background: #fff; border: 1px solid #e9ecef; padding: 15px; margin-bottom: 15px; border-radius: 6px; font-size: 0.95rem; position: relative; box-shadow: 0 2px 4px rgba(0,0,0,0.02); }
+        .log-item::before { content: ''; position: absolute; left: -27px; top: 15px; width: 12px; height: 12px; border-radius: 50%; background-color: #004a8d; border: 2px solid #fff; box-shadow: 0 0 0 2px #e9ecef; }
+        
+        .log-date { font-weight: bold; color: #495057; }
+        .log-analyst { font-size: 0.85rem; color: #000; background-color: #ffc107; padding: 3px 8px; border-radius: 4px; margin-left: 8px; font-weight: bold; border: 1px solid #d39e00; }
+        .log-type { font-size: 0.8rem; color: #fff; background-color: #004a8d; padding: 2px 6px; border-radius: 4px; margin-left: 4px; }
+        .log-status-select { font-size: 0.8rem; padding: 2px 4px; border-radius: 4px; border: 1px solid #ccc; margin-left: 10px; font-weight: bold; background-color: #f8f9fa; }
+        .evidence-badge { background-color: #f8f9fa; color: #6c757d; padding: 4px 8px; border-radius: 4px; font-size: 0.8rem; border: 1px dashed #6c757d; display: inline-block; margin-top: 10px; }
+
+        .elogio { color: #198754; font-weight: 500; }
+        .construcao { color: #dc3545; font-weight: 500; }
+        .acao { color: #0d6efd; font-weight: 500; }
         
         @media print {
             body { background-color: #fff; }
             .no-print { display: none !important; }
-            .card { box-shadow: none; border: 1px solid #ccc; break-inside: avoid; }
+            .card { box-shadow: none; border: none; break-inside: avoid; }
             .col-lg-6 { width: 100%; }
             #printableReport { display: block !important; }
         }
@@ -49,38 +64,37 @@
 <body>
 
 <!-- TELA DE LOGIN -->
-<div id="loginOverlay">
-    <div class="login-box">
+<div id="loginOverlay" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #004a8d; z-index: 9999; display: flex; align-items: center; justify-content: center;">
+    <div class="bg-white p-5 rounded text-center shadow-lg" style="max-width: 400px; width: 100%;">
         <h3 style="color: #004a8d; font-weight: bold;">Senac PDI 2026</h3>
         <p class="text-muted mb-4">Acesso restrito a Analistas</p>
-        
         <input type="email" id="emailInput" class="form-control mb-3" placeholder="E-mail de Acesso">
         <input type="password" id="passwordInput" class="form-control mb-3" placeholder="Senha">
-        
         <button class="btn btn-senac w-100 mb-2" onclick="fazerLogin()">Entrar no Sistema</button>
-        <p id="loginError" class="text-danger small" style="display: none;">Credenciais inválidas. Tente novamente.</p>
+        <p id="loginError" class="text-danger small" style="display: none;">Credenciais inválidas.</p>
     </div>
 </div>
 
-<!-- CONTEÚDO DO SISTEMA (Oculto até logar) -->
 <div id="appContent" style="display: none;">
     <div class="header-senac text-center mb-4 no-print position-relative">
         <h2>Sistema Vivo de Gestão de PDI - Senac 2026</h2>
-        <p class="mb-0">Avaliações Dinâmicas, Base Histórica e Trabalho Simultâneo Online</p>
-        <button class="btn btn-sm btn-outline-light position-absolute" style="top: 20px; right: 20px;" onclick="fazerLogout()"><i class="bi bi-box-arrow-right"></i> Sair</button>
+        <p class="mb-0">Avaliações Dinâmicas e Arquivamento Local de Evidências</p>
+        <div class="position-absolute" style="top: 20px; right: 20px;">
+            <button class="btn btn-sm btn-outline-light" onclick="fazerLogout()"><i class="bi bi-box-arrow-right"></i> Sair</button>
+        </div>
     </div>
 
     <div class="container-fluid px-4 no-print">
         <div class="row">
-            <!-- Coluna Esquerda -->
-            <div class="col-lg-6">
+            <!-- COLUNA ESQUERDA -->
+            <div class="col-lg-5">
                 <div class="row">
                     <div class="col-md-6">
-                        <div class="card border-primary">
-                            <div class="card-header bg-primary text-white"><i class="bi bi-person-badge"></i> Analista Responsável</div>
-                            <div class="card-body bg-light">
-                                <select class="form-select border-primary" id="analistaSelect">
-                                    <option value="" selected disabled>Selecione o(a) Analista...</option>
+                        <div class="card border-primary mb-3">
+                            <div class="card-header bg-primary text-white py-2"><i class="bi bi-person-badge"></i> Analista</div>
+                            <div class="card-body bg-light py-2">
+                                <select class="form-select form-select-sm" id="analistaSelect">
+                                    <option value="" selected disabled>Selecione...</option>
                                     <option value="Bruna Baldan">Bruna Baldan</option>
                                     <option value="Bianca">Bianca</option>
                                     <option value="Mariana">Mariana</option>
@@ -91,71 +105,68 @@
                         </div>
                     </div>
                     <div class="col-md-6">
-                        <div class="card border-success">
-                            <div class="card-header bg-success text-white"><i class="bi bi-file-earmark-excel"></i> Importar Avaliação Base</div>
-                            <div class="card-body bg-light">
-                                <input class="form-control form-control-sm" type="file" id="excelUpload" accept=".xlsx, .xls, .xlsm">
-                                <small class="text-muted">Mapeia sem duplicar. Salva online automaticamente.</small>
+                        <div class="card border-success mb-3">
+                            <div class="card-header bg-success text-white py-2"><i class="bi bi-file-earmark-excel"></i> Base Excel</div>
+                            <div class="card-body bg-light py-2">
+                                <input class="form-control form-control-sm" type="file" id="excelUpload" accept=".xlsx, .xls">
                             </div>
                         </div>
                     </div>
                 </div>
 
-                <!-- Dados da Avaliação Atual -->
                 <div class="card">
-                    <div class="card-header"><i class="bi bi-clipboard-data"></i> 1. Dados do Instrutor</div>
+                    <div class="card-header"><i class="bi bi-clipboard-data"></i> 1. Instrutor e Turmas</div>
                     <div class="card-body">
                         <div class="row">
-                            <div class="col-md-6 mb-3">
-                                <label class="form-label">Instrutor(a)</label>
+                            <div class="col-md-12 mb-3">
+                                <label class="form-label small fw-bold">Instrutor(a)</label>
                                 <div class="input-group">
-                                    <select class="form-select" id="instrutorSelect" onchange="selecionarInstrutor()">
+                                    <select class="form-select form-select-sm" id="instrutorSelect" onchange="selecionarInstrutor()">
                                         <option value="" selected disabled>Carregando Base...</option>
                                     </select>
-                                    <button class="btn btn-outline-success" type="button" onclick="addInstrutor()">+</button>
-                                    <button class="btn btn-outline-danger" type="button" onclick="delInstrutor()">-</button>
+                                    <button class="btn btn-sm btn-outline-success" type="button" onclick="addInstrutor()">+</button>
+                                    <button class="btn btn-sm btn-outline-danger" type="button" onclick="delInstrutor()">-</button>
                                 </div>
                             </div>
-                            <div class="col-md-6 mb-3">
-                                <label class="form-label">Turma (Opcional)</label>
+                            <div class="col-md-12 mb-3">
+                                <label class="form-label small fw-bold">Turma(s) Vinculada(s) (Base Global)</label>
                                 <div class="input-group">
-                                    <select class="form-select" id="turmaSelect" disabled>
-                                        <option value="" selected>Sem turma específica</option>
+                                    <select class="form-select form-select-sm" id="turmaSelect">
+                                        <option value="" selected>Carregando Turmas...</option>
                                     </select>
-                                    <button class="btn btn-outline-success" type="button" onclick="addTurma()">+</button>
-                                    <button class="btn btn-outline-danger" type="button" onclick="delTurma()">-</button>
+                                    <button class="btn btn-sm btn-outline-primary" type="button" onclick="addTurmaGlobal()">+ Criar Nova</button>
+                                    <button class="btn btn-sm btn-outline-secondary" type="button" onclick="vincularTurmaAoInstrutor()">Vincular</button>
                                 </div>
+                                <div id="turmasVinculadasLista" class="mt-2 text-muted small">Nenhuma turma vinculada.</div>
                             </div>
-                            <div class="col-md-12 mb-2">
-                                <label class="form-label">Mês/Ano de Referência</label>
-                                <input type="month" class="form-control" id="mesSelect" onchange="carregarAvaliacaoMes()">
+                            <div class="col-md-12">
+                                <label class="form-label small fw-bold">Mês/Ano de Referência</label>
+                                <input type="month" class="form-control form-control-sm" id="mesSelect" onchange="carregarAvaliacaoMes()">
                             </div>
                         </div>
                     </div>
                 </div>
 
                 <div class="card">
-                    <div class="card-header d-flex justify-content-between align-items-center">
-                        <span><i class="bi bi-ui-checks"></i> 2. Avaliação de Competências (Autoajustável)</span>
-                    </div>
-                    <div class="card-body" id="competenciasContainer"></div>
-                    <div class="card-footer bg-white border-top-0 d-grid">
-                        <button class="btn btn-senac" onclick="salvarAvaliacaoMensal(false)">Gravar Avaliação e Atualizar PDI</button>
+                    <div class="card-header"><i class="bi bi-ui-checks"></i> 2. Competências (Autoajustável)</div>
+                    <div class="card-body" id="competenciasContainer" style="font-size: 0.9rem;"></div>
+                    <div class="card-footer bg-white d-grid">
+                        <button class="btn btn-sm btn-senac" onclick="salvarAvaliacaoMensal(false)">Gravar Avaliação no Servidor</button>
                     </div>
                 </div>
             </div>
 
-            <!-- Coluna Direita -->
-            <div class="col-lg-6">
-                <!-- Tratativas Cronológicas -->
+            <!-- COLUNA DIREITA -->
+            <div class="col-lg-7">
                 <div class="card">
-                    <div class="card-header"><i class="bi bi-journal-text"></i> Histórico de Tratativas / Alinhamentos</div>
-                    <div class="card-body">
-                        <div class="row mb-3">
-                            <div class="col-md-4">
-                                <input type="date" id="logDate" class="form-control form-control-sm">
-                            </div>
-                            <div class="col-md-8">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <span><i class="bi bi-journal-text"></i> Diário de Bordo e Tratativas</span>
+                        <button class="btn btn-sm btn-outline-info" onclick="abrirModalSugestoes()"><i class="bi bi-lightbulb"></i> Banco de Feedbacks</button>
+                    </div>
+                    <div class="card-body bg-light">
+                        <div class="row mb-2">
+                            <div class="col-md-3"><input type="date" id="logDate" class="form-control form-control-sm"></div>
+                            <div class="col-md-5">
                                 <select id="logType" class="form-select form-select-sm">
                                     <option value="Alinhamento">Alinhamento</option>
                                     <option value="Apontamento">Apontamento</option>
@@ -164,39 +175,47 @@
                                     <option value="Elogio">Elogio/Reconhecimento</option>
                                 </select>
                             </div>
+                            <div class="col-md-4">
+                                <select id="logStatusInitial" class="form-select form-select-sm border-warning">
+                                    <option value="Acompanhamento">Em Acompanhamento</option>
+                                    <option value="Ajustado">Ajustado</option>
+                                    <option value="Solucionado">Solucionado</option>
+                                </select>
+                            </div>
                         </div>
-                        <div class="mb-3">
-                            <textarea class="form-control" id="logText" rows="2" placeholder="Descreva a tratativa..."></textarea>
+                        <div class="mb-2">
+                            <textarea class="form-control form-control-sm" id="logText" rows="3" placeholder="Descreva a situação. Se preferir, use o Banco de Feedbacks ao lado..."></textarea>
                         </div>
-                        <button class="btn btn-outline-primary btn-sm mb-3 w-100" onclick="adicionarLog()"><i class="bi bi-plus-circle"></i> Registrar no Banco e Autoajustar PDI</button>
                         
-                        <div id="logsContainer" style="max-height: 250px; overflow-y: auto; border-top: 1px solid #eee; padding-top: 10px;">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <div class="w-50">
+                                <label class="small text-muted mb-1"><i class="bi bi-download"></i> Arquivar Evidência Localmente (Opcional):</label>
+                                <input type="file" id="evidenciaUpload" class="form-control form-control-sm" accept=".pdf, .jpg, .jpeg, .png">
+                                <small class="text-secondary" style="font-size: 0.7em;">O arquivo será salvo no seu PC com o nome do instrutor.</small>
+                            </div>
+                            <button class="btn btn-primary btn-sm mt-3" onclick="processarEnvioLog()"><i class="bi bi-plus-circle"></i> Registrar no Histórico</button>
+                        </div>
+                        
+                        <div class="timeline mt-4" id="logsContainer" style="max-height: 400px; overflow-y: auto;">
                             <p class="text-muted small">Selecione um instrutor...</p>
                         </div>
                     </div>
                 </div>
 
-                <!-- Gráfico -->
-                <div class="card">
-                    <div class="card-header d-flex justify-content-between align-items-center">
-                        <span><i class="bi bi-graph-up"></i> Evolução Temporal</span>
-                        <select id="chartFilter" class="form-select form-select-sm" style="width: auto;" onchange="carregarHistoricoGrafico()">
-                            <option value="score">Score Geral (Médio)</option>
-                            <option value="tratativas">Volume de Tratativas</option>
-                        </select>
+                <div class="card sticky-top" style="top: 10px;">
+                    <div class="card-header">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <span><i class="bi bi-file-earmark-text"></i> Feedback e PDI Consolidado</span>
+                            <div>
+                                <button class="btn btn-sm btn-success me-1" onclick="salvarPdiManual()"><i class="bi bi-save"></i> Gravar</button>
+                                <button class="btn btn-sm btn-danger me-1" onclick="restaurarPdiAutomatico()"><i class="bi bi-arrow-counterclockwise"></i> Auto</button>
+                                <button class="btn btn-sm btn-dark" onclick="window.print()"><i class="bi bi-printer"></i> Imprimir</button>
+                            </div>
+                        </div>
                     </div>
-                    <div class="card-body"><div class="chart-container"><canvas id="lineChart"></canvas></div></div>
-                </div>
-                
-                <!-- PDI -->
-                <div class="card sticky-top" style="top: 20px;">
-                    <div class="card-header d-flex justify-content-between align-items-center">
-                        <span><i class="bi bi-file-text"></i> Feedback e PDI Consolidado</span>
-                        <button class="btn btn-sm btn-outline-dark" onclick="abrirRelatorioImpressao()"><i class="bi bi-printer"></i> Imprimir</button>
-                    </div>
-                    <div class="card-body">
-                        <div id="pdiOutput" class="mini-pdi-box text-muted" style="max-height: 500px; overflow-y: auto;">
-                            <em>O relatório aparecerá aqui.</em>
+                    <div class="card-body" style="background-color: #f8f9fa;">
+                        <div id="pdiOutput" contenteditable="true" class="mini-pdi-box text-dark">
+                            <em>O relatório e os apontamentos de evidências aparecerão aqui.</em>
                         </div>
                     </div>
                 </div>
@@ -205,12 +224,38 @@
     </div>
 </div>
 
-<div id="printableReport" class="container d-none no-print" style="margin-top: 20px;"></div>
+<!-- MODAL DE SUGESTÕES -->
+<div class="modal fade" id="sugestoesModal" tabindex="-1">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header bg-info text-dark">
+        <h5 class="modal-title"><i class="bi bi-lightbulb-fill"></i> Banco de Tratativas e Feedbacks - Padrão Senac</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body bg-light">
+          <p class="small text-muted mb-3">Clique em uma sugestão para colá-la na tela de registros.</p>
+          <h6 class="fw-bold text-primary border-bottom pb-1">Marcas Formativas Senac</h6>
+          <div class="list-group mb-3">
+              <button type="button" class="list-group-item list-group-item-action py-1 small" onclick="usarFeedback(this.innerText)">Evidencia postura colaborativa (Marca Formativa), apoiando o desenvolvimento dos colegas de turma, mas necessita ampliar a integração de metodologias ativas no plano de aula.</button>
+              <button type="button" class="list-group-item list-group-item-action py-1 small" onclick="usarFeedback(this.innerText)">Atitude Empreendedora detectada: o instrutor propôs projeto integrador alinhado perfeitamente às demandas reais do mercado local.</button>
+              <button type="button" class="list-group-item list-group-item-action py-1 small" onclick="usarFeedback(this.innerText)">Necessário reforçar o Domínio Técnico-Científico nas práticas de laboratório, garantindo a segurança e os protocolos exigidos no Plano de Curso Senac.</button>
+          </div>
+          <h6 class="fw-bold text-success border-bottom pb-1">Planejamento e Diário de Classe</h6>
+          <div class="list-group mb-3">
+              <button type="button" class="list-group-item list-group-item-action py-1 small" onclick="usarFeedback(this.innerText)">Atraso recorrente na inserção de frequências e notas no sistema acadêmico. Prazo realinhado para atualização em até 48h após a aula.</button>
+              <button type="button" class="list-group-item list-group-item-action py-1 small" onclick="usarFeedback(this.innerText)">Planejamento de aula exemplar. O Plano de Curso está sendo rigorosamente seguido, com excelente encadeamento didático.</button>
+          </div>
+          <h6 class="fw-bold text-danger border-bottom pb-1">Acompanhamento e Solução de Problemas</h6>
+          <div class="list-group">
+              <button type="button" class="list-group-item list-group-item-action py-1 small" onclick="usarFeedback(this.innerText)">Alinhamento realizado referente à postura em sala de aula (reclamação de alunos). Solicitada maior escuta ativa e empatia na mediação de conflitos.</button>
+              <button type="button" class="list-group-item list-group-item-action py-1 small" onclick="usarFeedback(this.innerText)">Reunião Pedagógica: Definido plano de ação para recuperação paralela de alunos com defasagem técnica. Instrutor apresentou proposta viável.</button>
+          </div>
+      </div>
+    </div>
+  </div>
+</div>
 
 <script>
-    // ==========================================
-    // CONFIGURAÇÃO DO FIREBASE (Auth + Firestore)
-    // ==========================================
     const firebaseConfig = {
         apiKey: "AIzaSyBCjnhVbsDyFeRtfZepACO7NraVThqJaL4",
         authDomain: "pdi-instrutores.firebaseapp.com",
@@ -220,135 +265,55 @@
         appId: "1:817045522643:web:8c04f64167d236b397ac26"
     };
 
-    firebase.initializeApp(firebaseConfig);
+    if(!firebase.apps.length) firebase.initializeApp(firebaseConfig);
     const auth = firebase.auth();
     const db = firebase.firestore();
 
-    // ==========================================
-    // LÓGICA DE AUTENTICAÇÃO
-    // ==========================================
     auth.onAuthStateChanged((user) => {
         if (user) {
-            // Usuário logado: Esconde tela de login, mostra o App e conecta ao Banco!
             document.getElementById('loginOverlay').style.display = 'none';
             document.getElementById('appContent').style.display = 'block';
             inicializarSistema();
         } else {
-            // Usuário deslogado: Mostra login, esconde app
             document.getElementById('loginOverlay').style.display = 'flex';
             document.getElementById('appContent').style.display = 'none';
-            // Limpa dados da memória por segurança
-            dataMap = {}; evalHistory = {}; tratativasLog = {};
-            if(listenerTratativas) listenerTratativas();
-            if(listenerAvaliacoes) listenerAvaliacoes();
-            if(listenerBase) listenerBase();
         }
     });
 
-    function fazerLogin() {
+    window.fazerLogin = function() {
         const email = document.getElementById('emailInput').value;
         const pass = document.getElementById('passwordInput').value;
-        document.getElementById('loginError').style.display = 'none';
-
-        auth.signInWithEmailAndPassword(email, pass).catch((error) => {
-            console.error(error);
+        auth.signInWithEmailAndPassword(email, pass).catch(() => {
             document.getElementById('loginError').style.display = 'block';
         });
     }
+    window.fazerLogout = function() { auth.signOut(); }
 
-    function fazerLogout() {
-        auth.signOut();
-    }
-
-    // ==========================================
-    // VARIÁVEIS GLOBAIS
-    // ==========================================
     let dataMap = {};
+    let globalTurmas = ["202500520", "202500413", "202500849", "202500853", "202500412", "202500369", "202500136"];
     let evalHistory = {};
     let tratativasLog = {};
-    let lineChart;
-    
-    let listenerBase = null;
-    let listenerTratativas = null;
-    let listenerAvaliacoes = null;
-
-    const originalDataMap = {
-      "Ana Claudia": ["202500520"], "Ana Maria": ["202500413"], "Bruna": ["202500849"], "Carla": ["202500853"],
-      "Jaqueline": ["202500412"], "Jean": ["202500369"], "Juliana": ["202500369"], "Katia": ["202500413"],
-      "Sheila": ["202500136"], "Tatiane": ["202500369"], "Viviane": ["202500136"]
-    };
+    let listenerBase = null; let listenerTratativas = null; let listenerAvaliacoes = null;
 
     const competenciasInfo = [
-        { id: 'comp_plan', name: 'Planejamento', keys: ['prazo', 'atraso', 'planejamento', 'organiza', 'esquecimento', 'agenda'],
-          feedbacks: {
-              100: { elogio: "Excepcional capacidade de planejamento; antecipa riscos e mantém entregas impecáveis.", acao: "Compartilhar boas práticas de organização." },
-              75: { elogio: "Organização e comprometimento adequados.", melhoria: "Ampliar a antecipação de cenários.", acao: "Planejamento antecipado de entregas." },
-              50: { melhoria: "Dificuldades em priorizar demandas.", acao: "Adotar matriz de priorização de tempo." },
-              25: { melhoria: "Necessidade urgente de organização estruturada.", acao: "Acompanhamento diário com coordenação." }
-          }
-        },
-        { id: 'comp_foco', name: 'Foco em Resultados', keys: ['meta', 'resultado', 'indicador', 'entrega', 'objetivo'],
-          feedbacks: {
-              100: { elogio: "Altamente proativo na superação de resultados.", acao: "Apoiar a instituição em novas metas." },
-              75: { elogio: "Cumpre metas e atinge resultados com consistência.", melhoria: "Fortalecer acompanhamento de indicadores.", acao: "Adoção de postura preditiva nas turmas." },
-              50: { melhoria: "Oscilações no alcance de metas.", acao: "Criar checkpoints semanais de resultados." },
-              25: { melhoria: "Dificuldades críticas no cumprimento das entregas.", acao: "Realinhar imediatamente objetivos da função." }
-          }
-        },
-        { id: 'comp_visao', name: 'Visão Sistêmica', keys: ['processo', 'instituição', 'impacto', 'sistema', 'integração'],
-          feedbacks: {
-              100: { elogio: "Conecta perfeitamente suas ações aos resultados globais.", acao: "Propor inovações institucionais." },
-              75: { elogio: "Atua de forma integrada.", melhoria: "Aprofundar compreensão dos processos Senac.", acao: "Avaliar impactos futuros das decisões de sala." },
-              50: { melhoria: "Visão limitada do contexto.", acao: "Participar ativamente dos alinhamentos estratégicos." },
-              25: { melhoria: "Atuação isolada prejudicando processos.", acao: "Treinamento urgente sobre fluxos institucionais." }
-          }
-        },
-        { id: 'comp_cliente', name: 'Foco no Cliente', keys: ['aluno', 'cliente', 'atendimento', 'reclamação', 'empresa', 'escuta'],
-          feedbacks: {
-              100: { elogio: "Atuação totalmente empática e proativa com os alunos/empresas.", acao: "Incentivar cultura de excelência na equipe." },
-              75: { elogio: "Compreende e atende as necessidades com qualidade.", melhoria: "Desenvolver maior agilidade na resolução.", acao: "Garantir rapidez no retorno das demandas." },
-              50: { melhoria: "Atendimento básico e reativo.", acao: "Exercitar escuta ativa e diminuir tempo de resposta." },
-              25: { melhoria: "Não atende adequadamente as necessidades dos alunos.", acao: "Revisão urgente de postura comportamental." }
-          }
-        },
-        { id: 'comp_comun', name: 'Comunicação', keys: ['comunica', 'clareza', 'conflito', 'ruído', 'entendimento', 'fala'],
-          feedbacks: {
-              100: { elogio: "Comunicação impecável e engajadora.", acao: "Apoiar a resolução de conflitos na equipe." },
-              75: { elogio: "Comunicação clara e objetiva.", melhoria: "Ampliar engajamento em reuniões.", acao: "Utilizar momentos de troca para evitar ruídos." },
-              50: { melhoria: "Falhas na clareza gerando dúvidas.", acao: "Estruturar ideias antes de repassá-las." },
-              25: { melhoria: "Comunicação confusa comprometendo a efetividade.", acao: "Desenvolver comunicação interpessoal urgente." }
-          }
-        },
-        { id: 'comp_prob', name: 'Solução de Problemas', keys: ['problema', 'solução', 'crise', 'risco', 'autonomia'],
-          feedbacks: {
-              100: { elogio: "Resolve problemas estruturalmente na causa-raiz.", acao: "Criar soluções escaláveis para a instituição." },
-              75: { elogio: "Identifica e resolve problemas rotineiros.", melhoria: "Ampliar autonomia em cenários complexos.", acao: "Ponderar riscos antes das decisões." },
-              50: { melhoria: "Depende frequentemente de apoio para solucionar.", acao: "Trazer propostas de solução ao escalar problemas." },
-              25: { melhoria: "Paralisa diante de situações adversas.", acao: "Acompanhamento diretivo para tomada de decisão." }
-          }
-        },
-        { id: 'comp_equipe', name: 'Trabalho em Equipe', keys: ['equipe', 'colega', 'ajuda', 'colaboração', 'grupo', 'junto'],
-          feedbacks: {
-              100: { elogio: "Altamente integrador, elevando o coletivo.", acao: "Manter postura de multiplicador." },
-              75: { elogio: "Relaciona-se de forma colaborativa.", melhoria: "Expandir círculo de colaboração.", acao: "Compartilhar conhecimentos ativamente." },
-              50: { melhoria: "Colaboração limitada ou inconsistente.", acao: "Engajar-se mais nas propostas coletivas." },
-              25: { melhoria: "Postura individualista ou conflituosa.", acao: "Mudança imediata de postura frente ao coletivo." }
-          }
-        }
+        { id: 'comp_plan', name: 'Planejamento e Organização', keys: ['prazo', 'atraso', 'planejamento', 'frequência', 'sistema', 'agenda'] },
+        { id: 'comp_foco', name: 'Foco em Resultados', keys: ['meta', 'resultado', 'indicador', 'entrega', 'notas'] },
+        { id: 'comp_visao', name: 'Visão Sistêmica', keys: ['processo', 'instituição', 'impacto', 'plano de curso'] },
+        { id: 'comp_cliente', name: 'Foco no Cliente', keys: ['aluno', 'cliente', 'atendimento', 'reclamação', 'escuta'] },
+        { id: 'comp_comun', name: 'Comunicação e Mediação', keys: ['comunica', 'conflito', 'clareza', 'didática', 'empatia'] },
+        { id: 'comp_prob', name: 'Solução de Problemas', keys: ['problema', 'solução', 'metodologias', 'práticas'] },
+        { id: 'comp_equipe', name: 'Trabalho em Equipe', keys: ['equipe', 'colega', 'colaborativa', 'ajuda'] }
     ];
 
-    // ==========================================
-    // INICIALIZAÇÃO DO SISTEMA (Após Login)
-    // ==========================================
     function inicializarSistema() {
         const cont = document.getElementById('competenciasContainer');
         cont.innerHTML = "";
         competenciasInfo.forEach(c => {
             cont.innerHTML += `
             <div class="row competency-row align-items-center" id="row_${c.id}">
-                <div class="col-md-5"><strong>${c.name}</strong></div>
+                <div class="col-md-5 fw-bold">${c.name}</div>
                 <div class="col-md-7">
-                    <select class="form-select comp-select" id="${c.id}" onchange="salvarAvaliacaoMensal(true)">
+                    <select class="form-select form-select-sm comp-select" id="${c.id}" onchange="salvarAvaliacaoMensal(true)">
                         <option value="25">Não Atende (0 a 2,5)</option>
                         <option value="50">Atende Parcialmente (2,5 a 5,0)</option>
                         <option value="75" selected>Atende (5,0 a 8,0)</option>
@@ -358,203 +323,225 @@
             </div>`;
         });
         
-        initChart();
         const hoje = new Date();
-        const mesStr = (hoje.getMonth() + 1).toString().padStart(2, '0');
-        document.getElementById('mesSelect').value = `${hoje.getFullYear()}-${mesStr}`;
+        document.getElementById('mesSelect').value = `${hoje.getFullYear()}-${(hoje.getMonth() + 1).toString().padStart(2, '0')}`;
         document.getElementById('logDate').value = hoje.toISOString().split('T')[0];
 
-        // Conecta ao Banco
         listenerBase = db.collection("configuracoes").doc("estrutura_instrutores").onSnapshot((doc) => {
-            if (doc.exists) {
-                dataMap = doc.data();
-            } else {
-                db.collection("configuracoes").doc("estrutura_instrutores").set(originalDataMap);
-                dataMap = originalDataMap;
+            if (doc.exists) { 
+                dataMap = doc.data().instrutores || {}; 
+                if(doc.data().turmasGlobais) globalTurmas = doc.data().turmasGlobais;
+            } else { 
+                dataMap = {"Ana Claudia": ["202500520"], "Bruna": ["202500849"], "Jean": ["202500369"]};
+                db.collection("configuracoes").doc("estrutura_instrutores").set({instrutores: dataMap, turmasGlobais: globalTurmas}); 
             }
             carregarInstrutores(document.getElementById('instrutorSelect').value);
+            renderizarTurmasGlobais();
         });
     }
 
     function carregarInstrutores(selecionado = "") {
         const sel = document.getElementById('instrutorSelect');
-        sel.innerHTML = '<option value="" selected disabled>Selecione...</option>';
+        sel.innerHTML = '<option value="" selected disabled>Selecione o Instrutor...</option>';
         Object.keys(dataMap).sort().forEach(inst => { sel.innerHTML += `<option value="${inst}">${inst}</option>`; });
         if (selecionado && dataMap[selecionado]) sel.value = selecionado;
     }
 
-    function selecionarInstrutor() {
+    function renderizarTurmasGlobais() {
+        const tSel = document.getElementById('turmaSelect');
+        tSel.innerHTML = '<option value="" selected disabled>Escolha a turma...</option>';
+        [...new Set(globalTurmas)].sort().forEach(t => tSel.innerHTML += `<option value="${t}">${t}</option>`);
+    }
+
+    window.selecionarInstrutor = function() {
         const inst = document.getElementById('instrutorSelect').value;
         if(!inst) return;
-        atualizarTurmas();
+        
+        atualizarTurmasVinculadasVisual(inst);
         
         if(listenerTratativas) listenerTratativas();
         if(listenerAvaliacoes) listenerAvaliacoes();
-
-        document.getElementById('pdiOutput').innerHTML = `<p class="text-primary small">Sincronizando...</p>`;
+        document.getElementById('pdiOutput').innerHTML = `<p class="text-primary small">Sincronizando Banco de Dados...</p>`;
 
         listenerTratativas = db.collection("tratativas").doc(inst).onSnapshot((doc) => {
             tratativasLog[inst] = doc.exists ? (doc.data().logs || []) : [];
-            renderizarLogs(); carregarHistoricoGrafico();
+            renderizarLogs();
         });
 
         listenerAvaliacoes = db.collection("avaliacoes").doc(inst).onSnapshot((doc) => {
             evalHistory[inst] = doc.exists ? (doc.data().historico || {}) : {};
-            carregarAvaliacaoMes(); carregarHistoricoGrafico(); gerarRelatorioInterface();
+            carregarAvaliacaoMes(); gerarRelatorioInterface();
         });
     }
 
-    function salvarDataMapNoBanco() {
-        db.collection("configuracoes").doc("estrutura_instrutores").set(dataMap).catch((error) => console.error(error));
+    function atualizarTurmasVinculadasVisual(inst) {
+        let div = document.getElementById('turmasVinculadasLista');
+        if(!dataMap[inst] || dataMap[inst].length === 0) { div.innerHTML = "Nenhuma turma."; return; }
+        div.innerHTML = dataMap[inst].map(t => `<span class="badge bg-secondary me-1 mb-1">${t} <i class="bi bi-x-circle ms-1" style="cursor:pointer;" onclick="removerVinculoTurma('${t}')"></i></span>`).join("");
     }
 
-    function atualizarTurmas() {
-        const inst = document.getElementById('instrutorSelect').value;
-        const tSelect = document.getElementById('turmaSelect');
-        tSelect.innerHTML = '<option value="" selected>Sem turma específica</option>';
-        if(inst && dataMap[inst]) {
-            dataMap[inst].forEach(t => { tSelect.innerHTML += `<option value="${t}">${t}</option>`; });
-            tSelect.disabled = false;
-        } else { tSelect.disabled = true; }
+    window.salvarEstrutura = function() {
+        db.collection("configuracoes").doc("estrutura_instrutores").set({instrutores: dataMap, turmasGlobais: globalTurmas});
     }
 
-    function addInstrutor() {
-        const nome = prompt("Nome do novo instrutor:");
-        if (nome && nome.trim() && !dataMap[nome.trim()]) {
-            dataMap[nome.trim()] = []; salvarDataMapNoBanco();
-            carregarInstrutores(nome.trim()); selecionarInstrutor();
+    window.addTurmaGlobal = function() {
+        const nova = prompt("Digite o código da nova Turma Senac (ex: 202600123):");
+        if(nova && nova.trim() && !globalTurmas.includes(nova.trim())) {
+            globalTurmas.push(nova.trim()); salvarEstrutura();
         }
     }
-
-    function delInstrutor() {
-        const inst = document.getElementById('instrutorSelect').value;
-        if(inst && confirm(`Excluir ${inst}?`)) {
-            delete dataMap[inst]; salvarDataMapNoBanco();
-            carregarInstrutores();
-        }
-    }
-
-    function addTurma() {
-        const inst = document.getElementById('instrutorSelect').value;
-        const turma = prompt(`Nova turma para ${inst}:`);
-        if (turma && !dataMap[inst].includes(turma.trim())) {
-            dataMap[inst].push(turma.trim()); dataMap[inst].sort(); salvarDataMapNoBanco(); atualizarTurmas();
-        }
-    }
-
-    function delTurma() {
+    window.vincularTurmaAoInstrutor = function() {
         const inst = document.getElementById('instrutorSelect').value;
         const turma = document.getElementById('turmaSelect').value;
-        if(inst && turma && confirm(`Excluir turma ${turma}?`)) {
-            dataMap[inst] = dataMap[inst].filter(t => t !== turma); salvarDataMapNoBanco(); atualizarTurmas();
+        if(!inst || !turma) return alert("Selecione instrutor e turma.");
+        if(!dataMap[inst].includes(turma)) { dataMap[inst].push(turma); salvarEstrutura(); atualizarTurmasVinculadasVisual(inst); }
+    }
+    window.removerVinculoTurma = function(turma) {
+        const inst = document.getElementById('instrutorSelect').value;
+        dataMap[inst] = dataMap[inst].filter(t => t !== turma); salvarEstrutura(); atualizarTurmasVinculadasVisual(inst);
+    }
+    window.addInstrutor = function() {
+        const nome = prompt("Nome do novo instrutor:");
+        if (nome && nome.trim() && !dataMap[nome.trim()]) { dataMap[nome.trim()] = []; salvarEstrutura(); carregarInstrutores(nome.trim()); selecionarInstrutor(); }
+    }
+
+    let modalSugestoes;
+    window.abrirModalSugestoes = function() {
+        if(!modalSugestoes) modalSugestoes = new bootstrap.Modal(document.getElementById('sugestoesModal'));
+        modalSugestoes.show();
+    }
+    window.usarFeedback = function(texto) {
+        let txt = document.getElementById('logText');
+        txt.value = (txt.value + " " + texto).trim();
+        modalSugestoes.hide();
+    }
+
+    // ==========================================
+    // DOWNLOAD LOCAL E REGISTRO NO FIRESTORE
+    // ==========================================
+    window.processarEnvioLog = function() {
+        const inst = document.getElementById('instrutorSelect').value;
+        const analista = document.getElementById('analistaSelect').value;
+        if(!inst || !analista) return alert("Selecione Instrutor e Analista.");
+        const text = document.getElementById('logText').value.trim(); 
+        if(!text) return alert("Digite o texto da tratativa.");
+        
+        let fileInput = document.getElementById('evidenciaUpload');
+        let file = fileInput.files[0];
+
+        if(file) {
+            // Cria um link temporário para forçar o download local do arquivo
+            const url = URL.createObjectURL(file);
+            const a = document.createElement('a');
+            a.href = url;
+            
+            // Renomeia o arquivo para manter a organização local
+            const dateStr = document.getElementById('logDate').value;
+            const cleanName = file.name.replace(/[^a-zA-Z0-9.-]/g, '_');
+            const newFileName = `Evidencia_PDI_${inst.replace(/\s+/g, '_')}_${dateStr}_${cleanName}`;
+            
+            a.download = newFileName;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+
+            // Salva apenas o nome do arquivo no Banco de Dados
+            salvarLogFinal(inst, analista, text, newFileName);
+            fileInput.value = ""; 
+        } else {
+            salvarLogFinal(inst, analista, text, null);
         }
     }
 
-    document.getElementById('excelUpload').addEventListener('change', function(e) {
-        var file = e.target.files[0];
-        if(!file) return;
-        const analista = document.getElementById('analistaSelect').value;
-        if(!analista) return alert("Selecione o Analista antes de importar.");
-        var reader = new FileReader();
-        reader.onload = function(evt) {
-            var workbook = XLSX.read(new Uint8Array(evt.target.result), {type: 'array'});
-            processarExcel(XLSX.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]], {header: 1}));
-        };
-        reader.readAsArrayBuffer(file);
-    });
-
-    function processarExcel(rows) {
-        let rawName = ""; let notas = {};
-        for(let i=0; i<rows.length; i++) {
-            let rowStr = rows[i].join(" ").toLowerCase();
-            if (rowStr.includes("nome:") || rowStr.includes("empregado:")) {
-                let match = rows[i].join(" ").match(/NOME:\s*([^]+)/i);
-                if(match) rawName = match[1].trim().split("LOTAÇÃO")[0].split("-")[0].trim();
-            }
-            competenciasInfo.forEach(comp => {
-                if(rowStr.includes(comp.name.toLowerCase())) {
-                    notas[comp.id] = (rowStr.includes("excelência") && rowStr.includes("x")) ? 100 : (rowStr.includes("parcialmente") && rowStr.includes("x")) ? 50 : (rowStr.includes("não atende") && rowStr.includes("x")) ? 25 : 75;
-                }
-            });
-        }
-        if(rawName) {
-            let matchedKey = Object.keys(dataMap).find(k => rawName.toLowerCase().includes(k.toLowerCase()) || k.toLowerCase().includes(rawName.toLowerCase()));
-            let instrutorEncontrado = matchedKey || rawName;
-            if(!matchedKey) { dataMap[instrutorEncontrado] = []; salvarDataMapNoBanco(); carregarInstrutores(instrutorEncontrado); } 
-            else { document.getElementById('instrutorSelect').value = instrutorEncontrado; }
-            selecionarInstrutor();
-            setTimeout(() => {
-                Object.keys(notas).forEach(id => { if(document.getElementById(id)) document.getElementById(id).value = notas[id]; });
-                document.getElementById('logType').value = "Avaliação Base";
-                document.getElementById('logText').value = "Importação de Planilha.";
-                adicionarLog(true); salvarAvaliacaoMensal(true);
-                alert("Planilha processada e salva no banco!");
-            }, 1000);
-        }
+    function salvarLogFinal(inst, analista, text, localFileName) {
+        if(!tratativasLog[inst]) tratativasLog[inst] = [];
+        tratativasLog[inst].push({ 
+            id: Date.now(), 
+            date: document.getElementById('logDate').value, 
+            analyst: analista, 
+            type: document.getElementById('logType').value, 
+            status: document.getElementById('logStatusInitial').value, 
+            text: text, 
+            evidenceName: localFileName 
+        });
+        tratativasLog[inst].sort((a, b) => new Date(b.date) - new Date(a.date));
+        
+        db.collection("tratativas").doc(inst).set({ logs: tratativasLog[inst] }, { merge: true }).then(() => {
+            document.getElementById('logText').value = "";
+            analisarImpactoLog(text, document.getElementById('logType').value);
+        });
     }
 
     function analisarImpactoLog(texto, tipo) {
         let txt = texto.toLowerCase(); let modified = false;
-        let isNegative = tipo === 'Apontamento' || txt.includes('atraso') || txt.includes('falha') || txt.includes('precisa');
-        let isPositive = tipo === 'Elogio' || txt.includes('parabéns') || txt.includes('excelente');
-
+        let isNegative = tipo === 'Apontamento' || txt.includes('atraso') || txt.includes('falha');
+        let isPositive = tipo === 'Elogio' || txt.includes('parabéns') || txt.includes('exemplar');
         competenciasInfo.forEach(rule => {
             if(rule.keys.some(k => txt.includes(k))) {
                 let el = document.getElementById(rule.id); let val = parseInt(el.value);
-                if(isNegative && val > 25) { el.value = val === 100 ? 75 : (val === 75 ? 50 : 25); modified = true; }
-                else if(isPositive && val < 100) { el.value = val === 25 ? 50 : (val === 50 ? 75 : 100); modified = true; }
+                if(isNegative && val > 25) { el.value = val === 100 ? 75 : (val === 75 ? 50 : 25); modified = true; destacarAlteracao(rule.id); }
+                else if(isPositive && val < 100) { el.value = val === 25 ? 50 : (val === 50 ? 75 : 100); modified = true; destacarAlteracao(rule.id); }
             }
         });
         if(modified) salvarAvaliacaoMensal(true);
     }
 
-    function adicionarLog(silent = false) {
-        const inst = document.getElementById('instrutorSelect').value;
-        const analista = document.getElementById('analistaSelect').value;
-        if(!inst || !analista) return alert("Selecione Instrutor e Analista.");
-        const text = document.getElementById('logText').value.trim(); if(!text) return;
-
-        if(!tratativasLog[inst]) tratativasLog[inst] = [];
-        tratativasLog[inst].push({ id: Date.now(), date: document.getElementById('logDate').value, analyst: analista, type: document.getElementById('logType').value, text: text });
-        tratativasLog[inst].sort((a, b) => new Date(b.date) - new Date(a.date));
-        
-        db.collection("tratativas").doc(inst).set({ logs: tratativasLog[inst] }, { merge: true }).then(() => {
-            if(!silent) alert("Tratativa gravada!");
-            document.getElementById('logText').value = "";
-            if(!silent) analisarImpactoLog(text, document.getElementById('logType').value);
-        });
+    function destacarAlteracao(id) {
+        let row = document.getElementById('row_' + id);
+        row.classList.add('highlight'); setTimeout(() => row.classList.remove('highlight'), 2000);
     }
+
+    window.deleteLog = function(id) {
+        if(!confirm("Excluir esta tratativa permanentemente?")) return;
+        const inst = document.getElementById('instrutorSelect').value;
+        tratativasLog[inst] = tratativasLog[inst].filter(log => log.id !== id);
+        db.collection("tratativas").doc(inst).set({ logs: tratativasLog[inst] }, { merge: true }).then(() => {
+            renderizarLogs(); gerarRelatorioInterface();
+        });
+    };
+
+    window.updateLogStatus = function(id, novoStatus) {
+        const inst = document.getElementById('instrutorSelect').value;
+        let log = tratativasLog[inst].find(l => l.id === id); if(!log) return;
+        log.status = novoStatus;
+        db.collection("tratativas").doc(inst).set({ logs: tratativasLog[inst] }, { merge: true }).then(() => gerarRelatorioInterface());
+    };
 
     function renderizarLogs() {
         const inst = document.getElementById('instrutorSelect').value;
         const cont = document.getElementById('logsContainer');
         cont.innerHTML = "";
-        if(!tratativasLog[inst] || tratativasLog[inst].length === 0) { cont.innerHTML = `<p class="text-muted small">Sem registros.</p>`; return; }
-        tratativasLog[inst].forEach(log => {
-            cont.innerHTML += `<div class="log-item"><div><span class="log-date">${new Date(log.date + 'T00:00:00').toLocaleDateString('pt-BR')}</span> <span class="log-analyst">${log.analyst}</span> <span class="log-type">${log.type}</span></div><div class="mt-2 text-dark">${log.text}</div></div>`;
-        });
-    }
-
-    function initChart() {
-        lineChart = new Chart(document.getElementById('lineChart').getContext('2d'), {
-            type: 'line', data: { labels: [], datasets: [{ label: 'Indicador', data: [], borderColor: '#004a8d', backgroundColor: 'rgba(0, 74, 141, 0.1)', borderWidth: 3, fill: true, tension: 0.3 }] },
-            options: { responsive: true, maintainAspectRatio: false, scales: { y: { beginAtZero: true } } }
-        });
-    }
-
-    function carregarHistoricoGrafico() {
-        const inst = document.getElementById('instrutorSelect').value;
-        if(!inst || !evalHistory[inst]) return;
-        const meses = Object.keys(evalHistory[inst]).sort();
-        const filtro = document.getElementById('chartFilter').value;
-        let dados = [];
-        if(filtro === 'score') dados = meses.map(m => evalHistory[inst][m].average);
-        else if (filtro === 'tratativas') dados = meses.map(m => (tratativasLog[inst] || []).filter(l => l.date.startsWith(m)).length);
+        if(!tratativasLog[inst] || tratativasLog[inst].length === 0) { cont.innerHTML = `<p class="text-muted small">Sem registros de tratativas para este instrutor.</p>`; return; }
         
-        lineChart.data.labels = meses; lineChart.data.datasets[0].data = dados; lineChart.update();
+        tratativasLog[inst].forEach(log => {
+            let anexoHtml = log.evidenceName ? `<br><span class="evidence-badge"><i class="bi bi-hdd"></i> Evidência salva no PC: <strong>${log.evidenceName}</strong></span>` : '';
+            
+            let selStatus = `<select class="log-status-select" onchange="updateLogStatus(${log.id}, this.value)">
+                <option value="Acompanhamento" ${log.status==='Acompanhamento'?'selected':''}>Em Acompanhamento</option>
+                <option value="Ajustado" ${log.status==='Ajustado'?'selected':''}>Ajustado</option>
+                <option value="Solucionado" ${log.status==='Solucionado'?'selected':''}>Solucionado</option>
+            </select>`;
+            
+            cont.innerHTML += `
+            <div class="log-item">
+                <button class="btn btn-sm btn-outline-danger position-absolute" style="top:10px; right:10px; padding: 2px 6px;" onclick="deleteLog(${log.id})"><i class="bi bi-trash"></i></button>
+                <div class="mb-2">
+                    <span class="log-date">${new Date(log.date + 'T00:00:00').toLocaleDateString('pt-BR')}</span>
+                    <span class="log-analyst"><i class="bi bi-person-circle"></i> ${log.analyst}</span>
+                    <span class="log-type">${log.type}</span>
+                    ${selStatus}
+                </div>
+                <div class="text-dark">${log.text}</div>
+                ${anexoHtml}
+            </div>`;
+        });
     }
 
-    function carregarAvaliacaoMes() {
+    // ==========================================
+    // PDI CONSOLIDADO
+    // ==========================================
+    window.carregarAvaliacaoMes = function() {
         const inst = document.getElementById('instrutorSelect').value;
         const mes = document.getElementById('mesSelect').value;
         if(!inst) return;
@@ -563,41 +550,85 @@
         gerarRelatorioInterface();
     }
 
-    function salvarAvaliacaoMensal(silent = false) {
+    window.salvarAvaliacaoMensal = function(silent = false) {
         const inst = document.getElementById('instrutorSelect').value;
         const mes = document.getElementById('mesSelect').value;
         if(!inst) return;
         let scores = []; let total = 0;
         competenciasInfo.forEach(c => { let val = parseInt(document.getElementById(c.id).value); scores.push(val); total += val; });
         let average = Math.round(total / 7);
+        
         if(!evalHistory[inst]) evalHistory[inst] = {};
-        evalHistory[inst][mes] = { scores: scores, average: average };
+        if(!evalHistory[inst][mes]) evalHistory[inst][mes] = {};
+        evalHistory[inst][mes].scores = scores; evalHistory[inst][mes].average = average;
         
         db.collection("avaliacoes").doc(inst).set({ historico: evalHistory[inst] }, { merge: true }).then(() => {
             if(!silent) alert(`Avaliação salva! Score: ${average}%`);
         });
     }
 
+    window.salvarPdiManual = function() {
+        const inst = document.getElementById('instrutorSelect').value; const mes = document.getElementById('mesSelect').value;
+        if(!inst) return;
+        if(!evalHistory[inst]) evalHistory[inst] = {}; if(!evalHistory[inst][mes]) evalHistory[inst][mes] = { scores: [75,75,75,75,75,75,75], average: 75 };
+        evalHistory[inst][mes].pdiText = document.getElementById('pdiOutput').innerHTML;
+        db.collection("avaliacoes").doc(inst).set({ historico: evalHistory[inst] }, { merge: true }).then(() => alert("Edição do PDI salva no Banco!"));
+    }
+    window.restaurarPdiAutomatico = function() {
+        const inst = document.getElementById('instrutorSelect').value; const mes = document.getElementById('mesSelect').value;
+        if(!inst || !evalHistory[inst] || !evalHistory[inst][mes]) return;
+        delete evalHistory[inst][mes].pdiText;
+        db.collection("avaliacoes").doc(inst).set({ historico: evalHistory[inst] }, { merge: true }).then(() => gerarRelatorioInterface()); 
+    }
+
     function gerarRelatorioInterface() {
         const inst = document.getElementById('instrutorSelect').value;
         if(!inst || !evalHistory[inst]) return;
-        const mesSelecionado = document.getElementById('mesSelect').value;
-        let mesRef = evalHistory[inst][mesSelecionado] ? mesSelecionado : Object.keys(evalHistory[inst]).sort().pop();
-        if(!mesRef) return;
+        const mesRef = document.getElementById('mesSelect').value;
+        if(!evalHistory[inst][mesRef]) return;
+        let histData = evalHistory[inst][mesRef]; 
+        
+        if (histData.pdiText) { document.getElementById('pdiOutput').innerHTML = histData.pdiText; return; }
 
-        let histData = evalHistory[inst][mesRef]; let elogios = []; let melhorias = []; let acoes = [];
-        competenciasInfo.forEach((c, index) => {
-            let texts = c.feedbacks[histData.scores[index]];
-            if(histData.scores[index] >= 75) { if(texts.elogio) elogios.push(`<li><strong>${c.name}:</strong> ${texts.elogio}</li>`); }
-            else { if(texts.melhoria) melhorias.push(`<li><strong>${c.name}:</strong> ${texts.melhoria}</li>`); if(texts.acao) acoes.push(`<li><strong>${c.name}:</strong> ${texts.acao}</li>`); }
-        });
+        let turmas = dataMap[inst] && dataMap[inst].length > 0 ? dataMap[inst].join(", ") : "Não informada";
 
-        document.getElementById('pdiOutput').innerHTML = `<h5>Relatório Consolidado - ${inst}</h5><hr><p><strong>Score (Ref: ${mesRef}):</strong> ${histData.average}%</p>` + 
-            (elogios.length > 0 ? `<h6 class="mt-3 elogio"><i class="bi bi-star-fill"></i> Pontos Fortes</h6><ul class="text-dark small">${elogios.join("")}</ul>` : '') +
-            (melhorias.length > 0 ? `<h6 class="mt-3 construcao"><i class="bi bi-tools"></i> Oportunidades</h6><ul class="text-dark small">${melhorias.join("")}</ul><h6 class="mt-3 acao"><i class="bi bi-check-circle"></i> Ações do PDI</h6><ul class="text-dark small">${acoes.join("")}</ul>` : '');
+        let pdiHtml = `
+            <div style="text-align: center; margin-bottom: 20px;">
+                <h4 style="color:#004a8d; margin-bottom:0;">DOCUMENTO DE DESENVOLVIMENTO INDIVIDUAL (PDI)</h4>
+                <p class="text-muted small">Senac Paraná - Referência: ${mesRef}</p>
+            </div>
+            <table class="table table-bordered table-sm small">
+                <tr><td class="bg-light fw-bold" style="width: 25%">Instrutor(a):</td><td>${inst}</td></tr>
+                <tr><td class="bg-light fw-bold">Turmas Vinculadas:</td><td>${turmas}</td></tr>
+                <tr><td class="bg-light fw-bold">Score Global:</td><td class="fw-bold text-primary">${histData.average}%</td></tr>
+            </table>`;
+
+        let logsAtivos = (tratativasLog[inst] || []).filter(l => l.status === 'Acompanhamento' || l.status === 'Ajustado');
+        let logsSolucionados = (tratativasLog[inst] || []).filter(l => l.status === 'Solucionado');
+        let arquivos = (tratativasLog[inst] || []).filter(l => l.evidenceName);
+
+        pdiHtml += `<h5 class="pdi-section-title"><i class="bi bi-bullseye"></i> Metas e Acompanhamentos Ativos</h5>`;
+        if(logsAtivos.length > 0) {
+            pdiHtml += `<ul class="small text-danger" style="padding-left: 20px;">`;
+            logsAtivos.forEach(l => pdiHtml += `<li><strong>[${new Date(l.date+'T00:00:00').toLocaleDateString()}]</strong> ${l.text} (${l.status})</li>`);
+            pdiHtml += `</ul>`;
+        } else { pdiHtml += `<p class="small text-success">Nenhuma pendência crítica ou ponto em acompanhamento.</p>`; }
+
+        if(logsSolucionados.length > 0) {
+            pdiHtml += `<h5 class="pdi-section-title"><i class="bi bi-check2-circle"></i> Evolução / Solucionados</h5><ul class="small text-success" style="padding-left: 20px;">`;
+            logsSolucionados.forEach(l => pdiHtml += `<li><strong>[${new Date(l.date+'T00:00:00').toLocaleDateString()}]</strong> ${l.text}</li>`);
+            pdiHtml += `</ul>`;
+        }
+
+        if(arquivos.length > 0) {
+            pdiHtml += `<h5 class="pdi-section-title"><i class="bi bi-folder-symlink"></i> Evidências Físicas / Digitais (Arquivadas Localmente)</h5><ul class="small text-secondary" style="padding-left: 20px;">`;
+            arquivos.forEach(l => pdiHtml += `<li class="mb-1"><i class="bi bi-hdd"></i> Arquivo: <strong>${l.evidenceName}</strong> <br><span style="font-size: 0.8em;">(Inserido no sistema em: ${new Date(l.date+'T00:00:00').toLocaleDateString()})</span></li>`);
+            pdiHtml += `</ul>`;
+        }
+
+        pdiHtml += `<div style="margin-top: 40px; border-top: 1px solid #ccc; padding-top: 10px; text-align: center; font-size: 0.8rem; color: #666;">Documento gerado pelo Sistema Vivo de Gestão PDI Senac - Uso Interno e Confidencial</div>`;
+        document.getElementById('pdiOutput').innerHTML = pdiHtml;
     }
-
-    function abrirRelatorioImpressao() { window.print(); }
 </script>
 </body>
 </html>
