@@ -1,325 +1,674 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Módulo PDI - Gestão de Desempenho</title>
-    <!-- Chart.js para os gráficos interagirem -->
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <style>
-        :root {
-            --senac-blue: #004a8f;
-            --senac-orange: #f37021;
-            --bg-color: #f4f7f6;
-            --card-bg: #ffffff;
-            --text-main: #333333;
-            --text-light: #666666;
-            --border-color: #e0e0e0;
-        }
-
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: var(--bg-color); color: var(--text-main); margin: 0; display: flex; height: 100vh; overflow: hidden; }
-        
-        /* Layout Grid */
-        .sidebar { width: 320px; background: var(--card-bg); border-right: 1px solid var(--border-color); display: flex; flex-direction: column; overflow-y: auto; }
-        .sidebar-header { padding: 20px; background: var(--senac-blue); color: white; }
-        .sidebar-header h2 { margin: 0; font-size: 1.2rem; }
-        .sidebar-header p { margin: 5px 0 0 0; font-size: 0.9rem; opacity: 0.8; }
-        
-        .main-content { flex: 1; padding: 30px; overflow-y: auto; display: grid; grid-template-columns: 1fr 1fr; gap: 20px; grid-template-rows: auto auto 1fr; }
-        
-        /* Caixinhas (Cards) de Instrutores */
-        .instructor-list { padding: 15px; }
-        .instructor-card { background: var(--bg-color); border: 1px solid var(--border-color); border-radius: 8px; padding: 15px; margin-bottom: 15px; cursor: pointer; transition: all 0.2s; }
-        .instructor-card:hover { border-color: var(--senac-orange); box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
-        .instructor-card.active { border-color: var(--senac-orange); background: #fff5f0; border-left: 4px solid var(--senac-orange); }
-        .instructor-card h3 { margin: 0 0 5px 0; font-size: 1.1rem; color: var(--senac-blue); }
-        .instructor-card p { margin: 0; font-size: 0.85rem; color: var(--text-light); }
-        .class-tags { display: flex; gap: 5px; margin-top: 10px; flex-wrap: wrap; }
-        .class-tag { background: #e2e8f0; font-size: 0.75rem; padding: 3px 8px; border-radius: 12px; color: #475569; }
-
-        /* Painéis do Conteúdo Principal */
-        .panel { background: var(--card-bg); border-radius: 10px; padding: 20px; box-shadow: 0 2px 10px rgba(0,0,0,0.03); border: 1px solid var(--border-color); }
-        .panel-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; border-bottom: 1px solid var(--border-color); padding-bottom: 10px; }
-        .panel-header h2 { margin: 0; font-size: 1.2rem; color: var(--senac-blue); }
-        
-        /* Gráfico e Pontuação */
-        .score-display { font-size: 3rem; font-weight: bold; color: var(--senac-orange); text-align: center; margin: 10px 0; }
-        .score-scale { text-align: center; font-size: 0.9rem; font-weight: bold; padding: 5px 10px; border-radius: 5px; display: inline-block; width: 100%; box-sizing: border-box;}
-        .scale-supera { background: #dcfce7; color: #166534; }
-        .scale-atende { background: #fef08a; color: #854d0e; }
-        
-        .chart-container { position: relative; height: 200px; width: 100%; }
-
-        /* Parecer */
-        .parecer-text { font-size: 0.95rem; line-height: 1.6; color: #444; background: #f8fafc; padding: 15px; border-radius: 6px; border-left: 3px solid var(--senac-blue); min-height: 150px; }
-
-        /* Gerador de Feedback */
-        .feedback-generator { grid-column: 1 / -1; }
-        .controls { display: flex; gap: 15px; margin-bottom: 15px; }
-        select { flex: 1; padding: 10px; border: 1px solid var(--border-color); border-radius: 5px; font-size: 0.95rem; outline: none; }
-        select:focus { border-color: var(--senac-blue); }
-        
-        .feedback-result { display: flex; flex-direction: column; gap: 15px; }
-        .feedback-box { background: #f8fafc; border: 1px solid #cbd5e1; padding: 15px; border-radius: 6px; position: relative; }
-        .feedback-box h4 { margin: 0 0 10px 0; display: flex; align-items: center; gap: 8px; }
-        .feedback-box h4.positive { color: #166534; }
-        .feedback-box h4.development { color: #b45309; }
-        .feedback-box p { margin: 0; font-size: 0.95rem; line-height: 1.5; }
-        .copy-btn { position: absolute; top: 15px; right: 15px; background: white; border: 1px solid #cbd5e1; padding: 5px 10px; border-radius: 4px; cursor: pointer; font-size: 0.8rem; transition: 0.2s; }
-        .copy-btn:hover { background: var(--senac-blue); color: white; border-color: var(--senac-blue); }
-
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Sistema de Gestão de PDI - Senac 2026</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
+  <style>
+    :root { --senac-blue:#004a8d; --senac-blue-2:#0072b8; --senac-orange:#f2a900; --ink:#172033; --muted:#687386; --surface:#f4f7fb; }
+    body { background:var(--surface); color:var(--ink); font-family:"Segoe UI",system-ui,-apple-system,sans-serif; }
+    .header-senac { background:linear-gradient(120deg,#003b72,var(--senac-blue-2)); color:white; border-bottom:5px solid var(--senac-orange); }
+    .brand-mark { width:44px; height:44px; border-radius:13px; display:grid; place-items:center; background:rgba(255,255,255,.14); color:var(--senac-orange); font-size:1.45rem; }
+    .card { border:0; border-radius:16px; box-shadow:0 8px 30px rgba(19,48,83,.08); }
+    .card-header { background:#fff; border-bottom:1px solid #e8edf4; color:var(--senac-blue); font-weight:700; border-radius:16px 16px 0 0!important; }
+    .nav-pills .nav-link { color:var(--senac-blue); font-weight:650; border-radius:999px; }
+    .nav-pills .nav-link.active { background:var(--senac-blue); }
+    .btn-senac { background:var(--senac-orange); border-color:var(--senac-orange); color:#172033; font-weight:750; }
+    .btn-senac:hover { background:#d89500; border-color:#d89500; color:#172033; }
+    .form-control:focus,.form-select:focus { border-color:#5aa8d8; box-shadow:0 0 0 .2rem rgba(0,114,184,.14); }
+    .wizard-step { position:relative; padding-left:34px; }
+    .wizard-step::before { content:attr(data-step); position:absolute; left:0; top:2px; width:26px; height:26px; border-radius:50%; display:grid; place-items:center; background:#e7f1f8; color:var(--senac-blue); font-weight:800; font-size:.78rem; }
+    .session-banner { background:linear-gradient(90deg,#e8f4fb,#fff8df); border:1px solid #cfe4f2; border-left:5px solid var(--senac-orange); border-radius:12px; }
+    .stat-card { border-left:4px solid var(--senac-blue); }
+    .stat-value { font-size:1.55rem; font-weight:800; color:var(--senac-blue); }
+    .competency-card { border:1px solid #e2eaf2; border-radius:14px; padding:16px; background:#fff; transition:.18s ease; }
+    .competency-card:focus-within { border-color:#7bb6dc; box-shadow:0 8px 24px rgba(0,74,141,.08); }
+    .comp-number { width:31px; height:31px; border-radius:9px; display:grid; place-items:center; background:var(--senac-blue); color:#fff; font-weight:800; flex:0 0 auto; }
+    .question { color:#48657c; font-size:.9rem; background:#f2f8fc; border-radius:10px; padding:9px 11px; }
+    .weight-pill { font-size:.72rem; border:1px solid #dce5ed; border-radius:999px; padding:3px 8px; color:#5b6876; white-space:nowrap; }
+    .score-box { background:#eef7fd; border:1px solid #cce5f4; border-radius:14px; padding:13px 16px; }
+    .chart-container { position:relative; height:320px; }
+    .timeline-item { border-left:3px solid #c8deed; padding:0 0 16px 16px; margin-left:7px; position:relative; }
+    .timeline-item::before { content:""; width:11px; height:11px; border-radius:50%; background:var(--senac-blue); position:absolute; left:-7px; top:5px; }
+    .timeline-item:last-child { padding-bottom:0; }
+    .mini-actions .btn { padding:.2rem .42rem; }
+    .table thead th { color:#526174; font-size:.78rem; text-transform:uppercase; letter-spacing:.035em; border-bottom-width:1px; white-space:nowrap; }
+    .table tbody td { vertical-align:middle; }
+    .table-scroll { max-height:520px; overflow:auto; }
+    .report-preview { background:#fff; border-left:5px solid var(--senac-blue); border-radius:12px; padding:20px; line-height:1.55; }
+    .empty-state { color:var(--muted); text-align:center; padding:28px 14px; }
+    .empty-state i { font-size:2rem; display:block; margin-bottom:8px; color:#9db2c2; }
+    .sync-dot { width:8px; height:8px; border-radius:50%; display:inline-block; background:#b8c3cd; }
+    .sync-dot.online { background:#38b26b; box-shadow:0 0 0 4px rgba(56,178,107,.14); }
+    #loginOverlay { position:fixed; inset:0; z-index:9999; display:grid; place-items:center; padding:20px; background:radial-gradient(circle at 20% 20%,#0c70b7,#003b72 70%); }
+    .login-box { width:min(440px,100%); background:#fff; border-radius:22px; padding:32px; box-shadow:0 25px 70px rgba(0,0,0,.28); }
+    .login-icon { width:58px; height:58px; border-radius:17px; display:grid; place-items:center; margin:auto; background:#e9f5fc; color:var(--senac-blue); font-size:1.8rem; }
+    fieldset[disabled] { opacity:.58; pointer-events:none; }
+    .sticky-panel { position:sticky; top:18px; }
+    .source-note { font-size:.78rem; color:#718096; }
+    .intelligence-box { background:linear-gradient(135deg,#eef8ff,#fff9e9); border:1px solid #cfe5f3; border-radius:13px; padding:13px; }
+    .competency-chip { display:inline-flex; align-items:center; gap:5px; border:1px solid #cbd9e5; background:#fff; color:#31526b; border-radius:999px; padding:5px 9px; font-size:.76rem; cursor:pointer; user-select:none; }
+    .competency-chip:has(input:checked) { background:var(--senac-blue); border-color:var(--senac-blue); color:#fff; }
+    .competency-chip input { position:absolute; opacity:0; pointer-events:none; }
+    .impact-positive { color:#198754; }
+    .impact-negative { color:#c2413b; }
+    .impact-neutral { color:#667085; }
+    .support-item { border:1px solid #e3eaf1; border-radius:11px; padding:10px; background:#fff; }
+    .support-item button { text-align:left; white-space:normal; }
+    .status-select { min-width:128px; font-size:.76rem; padding:.25rem 1.8rem .25rem .55rem; }
+    .profile-bar { height:7px; background:#e8edf3; border-radius:99px; overflow:hidden; }
+    .profile-bar > span { display:block; height:100%; background:linear-gradient(90deg,var(--senac-orange),var(--senac-blue)); border-radius:99px; }
+    .overdue { color:#b42318; font-weight:700; }
+    @media(max-width:991px){ .sticky-panel{position:static}.chart-container{height:280px} }
+    @media print {
+      body { background:#fff; }
+      #appContent,#loginOverlay,.modal,.toast-container { display:none!important; }
+      #printArea { display:block!important; color:#111; }
+      .print-header { border-bottom:3px solid var(--senac-orange); padding-bottom:12px; margin-bottom:22px; }
+    }
+  </style>
 </head>
 <body>
-
-    <!-- Lateral: Lista de Instrutores e Turmas -->
-    <div class="sidebar">
-        <div class="sidebar-header">
-            <h2>Módulo de Avaliação</h2>
-            <p>Analista: Bruna Baldan</p>
-        </div>
-        <div class="instructor-list" id="instructorList">
-            <!-- Gerado via JS -->
-        </div>
+  <div id="loginOverlay">
+    <div class="login-box">
+      <div class="login-icon mb-3"><i class="bi bi-person-check"></i></div>
+      <h3 class="text-center fw-bold" style="color:var(--senac-blue)">Senac PDI 2026</h3>
+      <p class="text-center text-secondary mb-4">Avaliação, acompanhamento e desenvolvimento de instrutores</p>
+      <div class="mb-3"><label class="form-label">E-mail</label><input id="emailInput" type="email" class="form-control" autocomplete="username" placeholder="seu.email@senac.br"></div>
+      <div class="mb-3"><label class="form-label">Senha</label><input id="passwordInput" type="password" class="form-control" autocomplete="current-password"></div>
+      <button class="btn btn-senac w-100" id="loginButton"><i class="bi bi-cloud-check me-1"></i> Entrar e sincronizar</button>
+      <div id="loginError" class="alert alert-danger small mt-3 mb-0 d-none"></div>
+      <div class="position-relative my-4"><hr><span class="position-absolute top-50 start-50 translate-middle bg-white px-2 text-secondary small">ou</span></div>
+      <button class="btn btn-outline-primary w-100" id="localModeButton"><i class="bi bi-laptop me-1"></i> Usar modo local nesta máquina</button>
+      <p class="small text-secondary mt-3 mb-0 text-center">O modo local permite testar e trabalhar sem login. A sincronização entre usuários requer o acesso Firebase.</p>
     </div>
+  </div>
 
-    <!-- Conteúdo Principal -->
-    <div class="main-content">
-        
-        <!-- Painel 1: Gráfico e Pontuação -->
-        <div class="panel">
-            <div class="panel-header">
-                <h2>Desempenho Geral</h2>
-                <span id="currentInstructorName" style="color: var(--text-light); font-weight: bold;">Selecione...</span>
-            </div>
-            <div class="score-display" id="displayScore">0,00</div>
-            <div id="displayScale" class="score-scale">Aguardando...</div>
-            <div class="chart-container mt-4">
-                <canvas id="radarChart"></canvas>
-            </div>
+  <div id="appContent" class="d-none">
+    <header class="header-senac py-3 mb-4 no-print">
+      <div class="container-fluid px-4 d-flex flex-wrap align-items-center justify-content-between gap-3">
+        <div class="d-flex align-items-center gap-3">
+          <div class="brand-mark"><i class="bi bi-graph-up-arrow"></i></div>
+          <div><h1 class="h4 mb-0 fw-bold">Sistema de Gestão de PDI</h1><div class="small opacity-75">Avaliação e acompanhamento de instrutores · 2026</div></div>
         </div>
-
-        <!-- Painel 2: Parecer do Avaliador (Leitura do Documento) -->
-        <div class="panel">
-            <div class="panel-header">
-                <h2>Parecer do Avaliador (PDI)</h2>
-            </div>
-            <div class="parecer-text" id="displayParecer">
-                Selecione um instrutor na lista lateral para carregar os dados do PDI.
-            </div>
+        <div class="d-flex align-items-center gap-2">
+          <span class="badge rounded-pill text-bg-light" id="modeBadge"><span class="sync-dot me-2" id="syncDot"></span><span id="modeText">Local</span></span>
+          <button class="btn btn-sm btn-outline-light" id="logoutButton"><i class="bi bi-box-arrow-right me-1"></i> Sair</button>
         </div>
+      </div>
+    </header>
 
-        <!-- Painel 3: Gerador Automático de Feedbacks (Leva Grande) -->
-        <div class="panel feedback-generator">
-            <div class="panel-header">
-                <h2>Suporte ao Analista: Gerador de Feedback Automático</h2>
-            </div>
-            <p style="font-size: 0.9rem; color: var(--text-light); margin-top: 0;">Selecione a competência para gerar textos baseados nas diretrizes comportamentais.</p>
-            
-            <div class="controls">
-                <select id="compSelect">
-                    <option value="planejamento">1. Planejamento</option>
-                    <option value="foco_resultados">2. Foco em Resultados</option>
-                    <option value="visao_sistemica">3. Visão Sistêmica</option>
-                    <option value="foco_cliente">4. Foco no Cliente</option>
-                    <option value="comunicacao">5. Comunicação</option>
-                    <option value="solucao_problemas">6. Solução de Problemas</option>
-                    <option value="trabalho_equipe">7. Trabalho em Equipe</option>
-                </select>
-            </div>
+    <main class="container-fluid px-3 px-lg-4 pb-5">
+      <ul class="nav nav-pills gap-2 mb-4 no-print" role="tablist">
+        <li class="nav-item"><button class="nav-link active" data-bs-toggle="pill" data-bs-target="#tabAtendimento" type="button"><i class="bi bi-play-circle me-1"></i> Atendimento</button></li>
+        <li class="nav-item"><button class="nav-link" data-bs-toggle="pill" data-bs-target="#tabCadastros" type="button"><i class="bi bi-people me-1"></i> Cadastros</button></li>
+        <li class="nav-item"><button class="nav-link" data-bs-toggle="pill" data-bs-target="#tabRegistros" type="button"><i class="bi bi-clock-history me-1"></i> Registros</button></li>
+        <li class="nav-item"><button class="nav-link" data-bs-toggle="pill" data-bs-target="#tabCompetencias" type="button"><i class="bi bi-compass me-1"></i> Competências</button></li>
+      </ul>
 
-            <div class="feedback-result">
-                <div class="feedback-box">
-                    <button class="copy-btn" onclick="copyText('fb-pos')">Copiar</button>
-                    <h4 class="positive">🎯 Ponto Forte (Reconhecimento)</h4>
-                    <p id="fb-pos">Selecione uma competência acima.</p>
+      <div class="tab-content">
+        <section class="tab-pane fade show active" id="tabAtendimento">
+          <div class="card mb-4">
+            <div class="card-header py-3"><i class="bi bi-signpost-split me-2"></i>Início do atendimento</div>
+            <div class="card-body">
+              <div class="row g-3 align-items-end">
+                <div class="col-lg-2 wizard-step" data-step="1"><label class="form-label fw-semibold">Analista</label><select class="form-select" id="analystSelect"></select></div>
+                <div class="col-lg-3 wizard-step" data-step="2"><label class="form-label fw-semibold">Instrutor(a)</label><select class="form-select" id="instructorSelect"></select></div>
+                <div class="col-lg-3 wizard-step" data-step="3"><label class="form-label fw-semibold">Turma</label><select class="form-select" id="classSelect" disabled></select></div>
+                <div class="col-lg-2 wizard-step" data-step="4"><label class="form-label fw-semibold">Tipo</label><select class="form-select" id="sessionType"><option>Acompanhamento</option><option>Avaliação</option><option>Alinhamento</option><option>Feedback</option><option>Apontamento</option><option>Ajuste</option><option>Plano de ação</option><option>Treinamento</option><option>Reunião pedagógica</option><option>Elogio / reconhecimento</option></select></div>
+                <div class="col-lg-2 d-grid"><button class="btn btn-senac" id="startSessionButton"><i class="bi bi-play-fill me-1"></i> Iniciar</button></div>
+              </div>
+              <div class="session-banner p-3 mt-3 d-none" id="sessionBanner"></div>
+            </div>
+          </div>
+
+          <div class="row g-4">
+            <div class="col-xl-7">
+              <div class="card">
+                <div class="card-header py-3 d-flex flex-wrap justify-content-between align-items-center gap-2">
+                  <span><i class="bi bi-ui-checks me-2"></i>Avaliação de competências <span class="badge text-bg-light ms-1">Opcional</span></span>
+                  <button class="btn btn-sm btn-outline-primary" id="newEvaluationButton"><i class="bi bi-file-earmark-plus me-1"></i> Nova avaliação</button>
                 </div>
-                <div class="feedback-box">
-                    <button class="copy-btn" onclick="copyText('fb-dev')">Copiar</button>
-                    <h4 class="development">🌱 Oportunidade de Desenvolvimento (PDI)</h4>
-                    <p id="fb-dev">Selecione uma competência acima.</p>
+                <div class="card-body">
+                  <fieldset id="assessmentFieldset" disabled>
+                    <div class="row g-3 mb-3">
+                      <div class="col-md-4"><label class="form-label">Referência</label><input type="month" class="form-control" id="referenceInput"></div>
+                      <div class="col-md-4"><label class="form-label">Data da avaliação</label><input type="date" class="form-control" id="assessmentDateInput"></div>
+                      <div class="col-md-4"><label class="form-label">Registro</label><input class="form-control" id="evaluationStatusInput" value="Novo" disabled></div>
+                    </div>
+                    <div id="competenciesContainer" class="d-grid gap-3"></div>
+                    <div class="mt-3"><label class="form-label fw-semibold">Parecer do avaliador</label><textarea class="form-control" id="opinionInput" rows="6" placeholder="Registre o parecer consolidado. O texto permanece editável no histórico e no relatório."></textarea></div>
+                    <div class="score-box mt-3 d-flex flex-wrap justify-content-between align-items-center gap-3">
+                      <div><div class="small text-secondary">Pontuação ponderada</div><div class="h3 mb-0 fw-bold" id="weightedScore">0,000 / 10</div></div>
+                      <div class="text-md-end"><div class="small text-secondary">Classificação</div><div class="fw-bold" id="scoreClassification">—</div></div>
+                    </div>
+                    <div class="d-flex flex-wrap gap-2 mt-3">
+                      <button class="btn btn-senac" id="saveEvaluationButton"><i class="bi bi-cloud-arrow-up me-1"></i> Salvar avaliação</button>
+                      <button class="btn btn-outline-danger d-none" id="deleteCurrentEvaluationButton"><i class="bi bi-trash me-1"></i> Excluir avaliação</button>
+                      <label class="btn btn-outline-success ms-md-auto mb-0"><i class="bi bi-file-earmark-excel me-1"></i> Importar PDI <input id="pdiImportInput" type="file" accept=".xlsx,.xls,.xlsm" hidden></label>
+                    </div>
+                  </fieldset>
                 </div>
+              </div>
             </div>
-        </div>
 
-    </div>
+            <div class="col-xl-5">
+              <div class="sticky-panel d-grid gap-4">
+                <div class="card">
+                  <div class="card-header py-3 d-flex flex-wrap justify-content-between align-items-center gap-2">
+                    <span><i class="bi bi-graph-up me-2"></i>Evolução interativa</span>
+                    <select id="chartMetric" class="form-select form-select-sm" style="width:auto"></select>
+                  </div>
+                  <div class="card-body"><div class="chart-container"><canvas id="evolutionChart"></canvas><div id="chartFallback" class="empty-state d-none"><i class="bi bi-bar-chart"></i>Gráfico indisponível.</div></div><div id="profileSummary" class="mt-3"></div><div class="small text-secondary mt-2">O perfil combina avaliações e impactos dos eventos. Mudanças de texto, status e encaminhamento recalculam as competências e os relatórios.</div></div>
+                </div>
 
-    <script>
-        // --- 1. BASE DE DADOS (PDI Integrado e Mock para outros) ---
-        const database = {
-            "ana_claudia": {
-                id: "ana_claudia",
-                name: "Ana Claudia",
-                role: "Instrutora",
-                classes: ["Aprendizagem Comercial", "Turmas de Resgate"],
-                score: 8.13,
-                parecer: "Ana Claudia tem desempenho consistente e atende plenamente às expectativas institucionais. Destaca-se no Planejamento e Foco no Cliente, atuando com autonomia operacional e forte empatia no dia a dia com os estudantes. No Foco em Resultados e Solução de Problemas, realiza excelente monitoramento e atua com proatividade no resgate das turmas. Além disso, interage bem e de forma integrada com as áreas. Para o seu PDI, o foco será unir Trabalho em Equipe e Comunicação, estimulando-a a liderar o compartilhamento de suas boas práticas de monitoramento com os colegas. Na Visão Sistêmica, o desafio é conectá-la estrategicamente, compreendendo como o impacto positivo de suas ações de resgate reflete nos indicadores da instituição.",
-                chartData: [9, 8.5, 7, 9, 7.5, 8.5, 7.5] // Plan, FocoR, VisSist, FocoC, Com, SolProb, TrabEq
-            },
-            "joao_silva": {
-                id: "joao_silva",
-                name: "João Silva",
-                role: "Instrutor",
-                classes: ["Informática Básica", "Excel Avançado"],
-                score: 6.50,
-                parecer: "João domina o conteúdo técnico, mas precisa desenvolver o acompanhamento das turmas. O PDI focará em Planejamento para evitar atrasos nas rotinas sistêmicas.",
-                chartData: [5, 6, 6, 7, 8, 6, 7]
-            }
-        };
+                <div class="card">
+                  <div class="card-header py-3"><i class="bi bi-stars me-2"></i>Evento / tratativa inteligente</div>
+                  <div class="card-body">
+                    <fieldset id="treatmentFieldset" disabled>
+                      <div class="row g-2 mb-2"><div class="col-md-4"><label class="form-label small">Data</label><input type="date" class="form-control form-control-sm" id="treatmentDate"></div><div class="col-md-8"><label class="form-label small">Tipo de evento</label><select class="form-select form-select-sm" id="treatmentType"><option>Alinhamento</option><option>Feedback</option><option>Apontamento</option><option>Ajuste</option><option>Plano de ação</option><option>Treinamento</option><option>Acompanhamento</option><option>Reunião pedagógica</option><option>Elogio / reconhecimento</option><option>Ocorrência</option><option>Avaliação base</option></select></div></div>
+                      <div class="row g-2 mb-2"><div class="col-md-5"><label class="form-label small">Situação</label><select class="form-select form-select-sm" id="treatmentStatus"><option>Pendente</option><option>Agendado</option><option>Em andamento</option><option>Realizado</option><option>Concluído</option><option>Cancelado</option></select></div><div class="col-md-3"><label class="form-label small">Prioridade</label><select class="form-select form-select-sm" id="treatmentPriority"><option>Baixa</option><option selected>Média</option><option>Alta</option><option>Crítica</option></select></div><div class="col-md-4"><label class="form-label small">Efeito percebido</label><select class="form-select form-select-sm" id="treatmentEffect"><option value="auto">Analisar automaticamente</option><option value="positive">Fortalecimento</option><option value="negative">Ponto de atenção</option><option value="neutral">Neutro</option></select></div></div>
+                      <div class="row g-2 mb-2"><div class="col-md-6"><label class="form-label small">Prazo</label><input type="date" class="form-control form-control-sm" id="treatmentDueDate"></div><div class="col-md-6"><label class="form-label small">Próximo acompanhamento</label><input type="date" class="form-control form-control-sm" id="treatmentFollowUpDate"></div></div>
+                      <div class="mb-2"><label class="form-label small">Título / assunto</label><input class="form-control form-control-sm" id="treatmentTitle" placeholder="Ex.: Alinhamento sobre prazos de entrega"></div>
+                      <div class="mb-2"><label class="form-label small">Registro do evento</label><textarea class="form-control form-control-sm" rows="4" id="treatmentText" placeholder="Descreva fatos, evidências, contexto e o comportamento esperado..."></textarea></div>
+                      <div class="mb-2"><label class="form-label small">Encaminhamento / próxima ação</label><textarea class="form-control form-control-sm" rows="2" id="treatmentNextAction" placeholder="Defina o combinado, responsável, prazo ou atividade de desenvolvimento."></textarea></div>
+                      <div class="mb-2"><label class="form-label small">Competências relacionadas</label><div id="treatmentCompetencies" class="d-flex flex-wrap gap-1"></div></div>
+                      <div id="treatmentIntelligence" class="intelligence-box mb-2"></div>
+                      <div class="accordion mb-2" id="feedbackSupportAccordion"><div class="accordion-item"><h2 class="accordion-header"><button class="accordion-button collapsed py-2" type="button" data-bs-toggle="collapse" data-bs-target="#feedbackSupportBody"><i class="bi bi-lightbulb me-2"></i>Base de apoio ao analista</button></h2><div id="feedbackSupportBody" class="accordion-collapse collapse" data-bs-parent="#feedbackSupportAccordion"><div class="accordion-body p-2" id="feedbackSupport"></div></div></div></div>
+                      <div class="d-flex gap-2 mt-2"><button class="btn btn-sm btn-outline-primary flex-grow-1" id="saveTreatmentButton"><i class="bi bi-plus-circle me-1"></i> Registrar</button><button class="btn btn-sm btn-outline-secondary d-none" id="cancelTreatmentButton">Cancelar edição</button></div>
+                    </fieldset>
+                    <hr><div class="d-flex justify-content-between align-items-center mb-2"><strong class="small">Acompanhamentos recentes</strong><span class="small text-secondary" id="pendingCounter"></span></div><div id="treatmentsContainer"></div>
+                  </div>
+                </div>
 
-        // --- 2. BANCO DE FEEDBACKS (A "Leva Grande" baseada nas imagens) ---
-        const feedbackBank = {
-            "planejamento": {
-                pos: "Destaco a forma estruturada e confiável com que você organiza suas demandas. Sua capacidade de antecipar riscos operacionais e priorizar com estratégia tem garantido entregas de alta qualidade, sem necessidade de acompanhamento constante.",
-                dev: "Notei que em situações recentes de aumento de demanda, houve dificuldade em reorganizar as prioridades, impactando os prazos. Nosso foco no PDI será estruturar uma rotina que permita maior previsibilidade e consistência nas entregas."
-            },
-            "foco_resultados": {
-                pos: "Sua atuação demonstra um foco excelente em resultados. Você não apenas executa as tarefas da sala de aula, mas acompanha os indicadores e busca ativamente alternativas para resolver obstáculos, gerando impacto real.",
-                dev: "Observei que há muito esforço na execução das aulas, mas precisamos fortalecer o acompanhamento dos resultados finais (como retenção de alunos). O objetivo é conectar suas atividades aos indicadores esperados para a função."
-            },
-            "visao_sistemica": {
-                pos: "É notável sua capacidade de compreender o contexto amplo da instituição. Você conecta as informações, entende o impacto das suas ações em outras áreas e utiliza isso para tomar decisões muito mais assertivas.",
-                dev: "Em algumas decisões recentes, o olhar ficou restrito apenas à rotina da própria turma. O desafio agora é exercitar a percepção dos impactos: como uma alteração no seu cronograma afeta o pedagógico e o atendimento comercial?"
-            },
-            "foco_cliente": {
-                pos: "Sua empatia e escuta ativa com os alunos criam um ambiente acolhedor e profissional. Você assume a responsabilidade pelas demandas deles e busca soluções com agilidade, gerando uma ótima experiência.",
-                dev: "Tivemos relatos de alunos que não tiveram suas necessidades compreendidas ou solucionadas com agilidade. Vamos trabalhar na capacidade de escuta ativa e na condução das situações difíceis com maior foco na experiência deles."
-            },
-            "comunicacao": {
-                pos: "Sua comunicação oral e escrita é excelente. Você transmite ideias com clareza, objetividade e mantém o alinhamento com a equipe, sempre demonstrando abertura ao diálogo e escuta verdadeira.",
-                dev: "Algumas mensagens transmitidas geraram ruídos e dúvidas na equipe recentemente. Precisamos focar em organizar melhor as informações antes de passá-las adiante, garantindo que o entendimento do outro seja exatamente o que você quis dizer."
-            },
-            "solucao_problemas": {
-                pos: "Gostaria de reconhecer seu equilíbrio e segurança na tomada de decisões. Você analisa as causas raízes dos problemas e propõe soluções consistentes e preventivas, atuando com grande autonomia.",
-                dev: "Percebo que a atuação frente aos problemas tem sido mais reativa. Precisamos desenvolver sua capacidade de analisar os riscos com antecedência e buscar alternativas antes que a situação exija ações urgentes de terceiros."
-            },
-            "trabalho_equipe": {
-                pos: "Você é uma peça fundamental na integração da equipe. Compartilha seus conhecimentos generosamente, apoia o desenvolvimento dos colegas e atua de forma conectada, elevando nossos resultados coletivos.",
-                dev: "Embora suas entregas individuais sejam boas, notei uma postura mais individualista no compartilhamento de aprendizados. O PDI vai focar em estimular sua participação ativa nas discussões de grupo e no apoio aos colegas."
-            }
-        };
+                <div class="card">
+                  <div class="card-header py-3 d-flex justify-content-between align-items-center"><span><i class="bi bi-file-text me-2"></i>Relatório e PDI</span><button class="btn btn-sm btn-outline-dark" id="printReportButton"><i class="bi bi-printer"></i></button></div>
+                  <div class="card-body">
+                    <div class="report-preview" id="reportPreview"><div class="empty-state"><i class="bi bi-file-earmark-text"></i>Inicie um atendimento ou abra um relatório salvo.</div></div>
+                    <fieldset id="reportFieldset" disabled><div class="d-flex flex-wrap gap-2 mt-3"><button class="btn btn-senac flex-grow-1" id="saveReportButton"><i class="bi bi-save me-1"></i> Salvar relatório</button><button class="btn btn-outline-primary" id="openReportsButton"><i class="bi bi-folder2-open"></i></button></div></fieldset>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
 
-        // --- LÓGICA DO SISTEMA ---
-        let radarChartInstance = null;
+        <section class="tab-pane fade" id="tabCadastros">
+          <div class="row g-3 mb-4" id="statsRow"></div>
+          <div class="card mb-4">
+            <div class="card-header py-3 d-flex flex-wrap justify-content-between align-items-center gap-2"><span><i class="bi bi-database-gear me-2"></i>Base cadastral</span><div class="d-flex flex-wrap gap-2"><label class="btn btn-sm btn-outline-success mb-0"><i class="bi bi-file-earmark-spreadsheet me-1"></i> Importar relatório geral<input id="reportImportInput" type="file" accept=".xlsx,.xls,.xlsm" hidden></label><label class="btn btn-sm btn-outline-success mb-0"><i class="bi bi-file-earmark-check me-1"></i> Importar PDI<input id="globalPdiImportInput" type="file" accept=".xlsx,.xls,.xlsm" hidden></label><button class="btn btn-sm btn-outline-primary" id="exportBackupButton"><i class="bi bi-download me-1"></i> Backup JSON</button><label class="btn btn-sm btn-outline-primary mb-0"><i class="bi bi-upload me-1"></i> Restaurar backup<input id="backupImportInput" type="file" accept=".json" hidden></label><button class="btn btn-sm btn-outline-danger" id="resetSeedButton"><i class="bi bi-arrow-counterclockwise me-1"></i> Zerar base</button></div></div>
+            <div class="card-body"><p class="mb-0 text-secondary">Os cadastros usam identificadores estáveis: editar um nome não rompe avaliações, turmas ou históricos já relacionados. A exclusão informa e remove os vínculos dependentes.</p></div>
+          </div>
+          <div class="row g-4">
+            <div class="col-xl-5">
+              <div class="card mb-4"><div class="card-header py-3 d-flex justify-content-between align-items-center"><span><i class="bi bi-person-badge me-2"></i>Analistas</span><button class="btn btn-sm btn-outline-primary" id="addAnalystButton"><i class="bi bi-plus-lg"></i> Novo</button></div><div class="card-body p-0"><div class="table-responsive"><table class="table table-hover mb-0"><thead><tr><th class="ps-3">Nome</th><th>Status</th><th class="text-end pe-3">Ações</th></tr></thead><tbody id="analystsTableBody"></tbody></table></div></div></div>
+              <div class="card"><div class="card-header py-3 d-flex justify-content-between align-items-center"><span><i class="bi bi-people me-2"></i>Instrutores</span><button class="btn btn-sm btn-outline-primary" id="addInstructorButton"><i class="bi bi-plus-lg"></i> Novo</button></div><div class="card-body"><input class="form-control form-control-sm mb-3" id="instructorSearch" placeholder="Buscar por nome, crachá ou lotação..."><div class="table-scroll"><table class="table table-hover"><thead class="sticky-top bg-white"><tr><th>Instrutor</th><th>Turmas</th><th>Status</th><th class="text-end">Ações</th></tr></thead><tbody id="instructorsTableBody"></tbody></table></div></div></div>
+            </div>
+            <div class="col-xl-7"><div class="card"><div class="card-header py-3 d-flex justify-content-between align-items-center"><span><i class="bi bi-mortarboard me-2"></i>Turmas</span><button class="btn btn-sm btn-outline-primary" id="addClassButton"><i class="bi bi-plus-lg"></i> Nova</button></div><div class="card-body"><input class="form-control form-control-sm mb-3" id="classSearch" placeholder="Buscar turma, curso, modalidade ou instrutor..."><div class="table-scroll"><table class="table table-hover"><thead class="sticky-top bg-white"><tr><th>Turma</th><th>Curso</th><th>Analista</th><th>Instrutor atual</th><th>Status</th><th class="text-end">Ações</th></tr></thead><tbody id="classesTableBody"></tbody></table></div></div></div></div>
+          </div>
+        </section>
 
-        function initApp() {
-            renderInstructorList();
-            setupFeedbackListener();
-            // Inicia com a Ana Claudia selecionada por padrão
-            selectInstructor('ana_claudia'); 
-            document.getElementById('compSelect').dispatchEvent(new Event('change'));
-        }
+        <section class="tab-pane fade" id="tabRegistros">
+          <div class="card mb-4"><div class="card-header py-3"><i class="bi bi-funnel me-2"></i>Consulta de registros</div><div class="card-body"><div class="row g-3"><div class="col-md-5"><input class="form-control" id="recordsSearch" placeholder="Buscar instrutor, turma, parecer ou conteúdo..."></div><div class="col-md-3"><select class="form-select" id="recordsTypeFilter"><option value="all">Todos os tipos</option><option value="evaluations">Avaliações</option><option value="treatments">Tratativas</option><option value="reports">Relatórios</option></select></div><div class="col-md-4 d-flex align-items-center text-secondary small">Todos os registros podem ser impressos, editados e excluídos.</div></div></div></div>
+          <div class="card mb-4" id="evaluationsCard"><div class="card-header py-3"><i class="bi bi-clipboard-data me-2"></i>Avaliações</div><div class="card-body p-0"><div class="table-responsive"><table class="table table-hover mb-0"><thead><tr><th class="ps-3">Referência</th><th>Instrutor</th><th>Turma</th><th>Analista</th><th>Nota</th><th class="text-end pe-3">Ações</th></tr></thead><tbody id="evaluationsTableBody"></tbody></table></div></div></div>
+          <div class="card mb-4" id="treatmentsCard"><div class="card-header py-3"><i class="bi bi-chat-left-text me-2"></i>Eventos e tratativas</div><div class="card-body p-0"><div class="table-responsive"><table class="table table-hover mb-0"><thead><tr><th class="ps-3">Data</th><th>Instrutor</th><th>Tipo</th><th>Situação</th><th>Prazo</th><th>Registro</th><th class="text-end pe-3">Ações</th></tr></thead><tbody id="treatmentsTableBody"></tbody></table></div></div></div>
+          <div class="card" id="reportsCard"><div class="card-header py-3"><i class="bi bi-file-earmark-bar-graph me-2"></i>Relatórios e PDIs</div><div class="card-body p-0"><div class="table-responsive"><table class="table table-hover mb-0"><thead><tr><th class="ps-3">Referência</th><th>Título</th><th>Instrutor</th><th>Status</th><th class="text-end pe-3">Ações</th></tr></thead><tbody id="reportsTableBody"></tbody></table></div></div></div>
+        </section>
 
-        function renderInstructorList() {
-            const listObj = document.getElementById('instructorList');
-            listObj.innerHTML = '';
-            
-            Object.values(database).forEach(inst => {
-                const tags = inst.classes.map(c => `<span class="class-tag">${c}</span>`).join('');
-                
-                const card = document.createElement('div');
-                card.className = `instructor-card`;
-                card.id = `card-${inst.id}`;
-                card.onclick = () => selectInstructor(inst.id);
-                card.innerHTML = `
-                    <h3>${inst.name}</h3>
-                    <p>${inst.role}</p>
-                    <div class="class-tags">${tags}</div>
-                `;
-                listObj.appendChild(card);
-            });
-        }
+        <section class="tab-pane fade" id="tabCompetencias">
+          <div class="card"><div class="card-header py-3"><i class="bi bi-compass me-2"></i>As 7 competências do Senac Paraná</div><div class="card-body"><p class="text-secondary">Referências de cultura e desenvolvimento, combinadas às perguntas norteadoras do documento anexo.</p><div class="accordion" id="competencyReference"></div></div></div>
+        </section>
+      </div>
+    </main>
+  </div>
 
-        function selectInstructor(id) {
-            // Remove active
-            document.querySelectorAll('.instructor-card').forEach(c => c.classList.remove('active'));
-            document.getElementById(`card-${id}`).classList.add('active');
+  <div id="printArea" class="container py-4 d-none"></div>
+  <div class="toast-container position-fixed bottom-0 end-0 p-3"><div id="appToast" class="toast" role="status"><div class="toast-header"><i class="bi bi-check-circle-fill text-success me-2"></i><strong class="me-auto">Sistema PDI</strong><button class="btn-close" data-bs-dismiss="toast"></button></div><div class="toast-body" id="toastBody"></div></div></div>
 
-            const data = database[id];
-            
-            // Atualiza Textos
-            document.getElementById('currentInstructorName').innerText = data.name;
-            
-            // Formata Pontuação
-            let scoreStr = data.score.toFixed(2).replace('.', ',');
-            document.getElementById('displayScore').innerText = scoreStr;
-            
-            // Escala e Cor
-            const scaleDiv = document.getElementById('displayScale');
-            if (data.score >= 8.01) {
-                scaleDiv.innerText = "Supera as expectativas";
-                scaleDiv.className = "score-scale scale-supera";
-            } else if (data.score >= 5.01) {
-                scaleDiv.innerText = "Atende as expectativas";
-                scaleDiv.className = "score-scale scale-atende";
-            } else {
-                scaleDiv.innerText = "Requer Desenvolvimento";
-                scaleDiv.className = "score-scale";
-                scaleDiv.style.background = "#fee2e2";
-                scaleDiv.style.color = "#991b1b";
-            }
+  <div class="modal fade" id="analystModal" tabindex="-1"><div class="modal-dialog"><form class="modal-content" id="analystForm"><div class="modal-header"><h5 class="modal-title">Analista</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div><div class="modal-body"><input type="hidden" id="analystId"><div class="mb-3"><label class="form-label">Nome</label><input class="form-control" id="analystName" required></div><div class="mb-3"><label class="form-label">Apelidos para importação</label><input class="form-control" id="analystAliases" placeholder="Ex.: Bruna, B. Baldan"></div><div class="form-check form-switch"><input class="form-check-input" type="checkbox" id="analystActive" checked><label class="form-check-label" for="analystActive">Ativo</label></div></div><div class="modal-footer"><button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button><button class="btn btn-senac">Salvar</button></div></form></div></div>
+  <div class="modal fade" id="instructorModal" tabindex="-1"><div class="modal-dialog modal-lg"><form class="modal-content" id="instructorForm"><div class="modal-header"><h5 class="modal-title">Instrutor(a)</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div><div class="modal-body"><input type="hidden" id="instructorId"><div class="row g-3"><div class="col-md-6"><label class="form-label">Nome de exibição</label><input class="form-control" id="instructorName" required></div><div class="col-md-6"><label class="form-label">Nome completo</label><input class="form-control" id="instructorFullName"></div><div class="col-md-4"><label class="form-label">Crachá</label><input class="form-control" id="instructorBadge"></div><div class="col-md-8"><label class="form-label">Cargo</label><input class="form-control" id="instructorRole"></div><div class="col-12"><label class="form-label">Lotação</label><input class="form-control" id="instructorLocation"></div><div class="col-12"><label class="form-label">Outros nomes para correlação</label><input class="form-control" id="instructorAliases" placeholder="Separe por vírgulas"></div><div class="col-12"><div class="form-check form-switch"><input class="form-check-input" type="checkbox" id="instructorActive" checked><label class="form-check-label" for="instructorActive">Ativo</label></div></div></div></div><div class="modal-footer"><button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button><button class="btn btn-senac">Salvar</button></div></form></div></div>
+  <div class="modal fade" id="classModal" tabindex="-1"><div class="modal-dialog modal-xl"><form class="modal-content" id="classForm"><div class="modal-header"><h5 class="modal-title">Turma</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div><div class="modal-body"><input type="hidden" id="classId"><div class="row g-3"><div class="col-md-3"><label class="form-label">Código da turma</label><input class="form-control" id="classCode" required></div><div class="col-md-3"><label class="form-label">Modalidade</label><input class="form-control" id="classModality"></div><div class="col-md-6"><label class="form-label">Curso</label><input class="form-control" id="classCourse"></div><div class="col-md-4"><label class="form-label">Analista</label><select class="form-select" id="classAnalyst"></select></div><div class="col-md-2"><label class="form-label">Alunos</label><input class="form-control" type="number" min="0" id="classStudents"></div><div class="col-md-3"><label class="form-label">Início</label><input class="form-control" type="date" id="classStart"></div><div class="col-md-3"><label class="form-label">Término</label><input class="form-control" type="date" id="classEnd"></div><div class="col-md-3"><label class="form-label">Passagem 1</label><input class="form-control" type="date" id="classHandoff1"></div><div class="col-md-3"><label class="form-label">Passagem 2</label><input class="form-control" type="date" id="classHandoff2"></div><div class="col-md-3"><label class="form-label">Situação</label><select class="form-select" id="classStatus"><option>Ativo</option><option>Agendado</option><option>Transferido (P1)</option><option>Transferido (P2)</option><option>Concluído</option><option>Inativo</option></select></div><div class="col-md-3"><label class="form-label">Instrutor atual</label><select class="form-select" id="classCurrentInstructor"></select></div><div class="col-12"><label class="form-label">Instrutores vinculados</label><select class="form-select" id="classInstructors" multiple size="7"></select><div class="form-text">Use Ctrl/Cmd para selecionar mais de um.</div></div></div></div><div class="modal-footer"><button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button><button class="btn btn-senac">Salvar</button></div></form></div></div>
+  <div class="modal fade" id="reportModal" tabindex="-1"><div class="modal-dialog modal-xl"><form class="modal-content" id="reportForm"><div class="modal-header"><h5 class="modal-title">Relatório / PDI</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div><div class="modal-body"><input type="hidden" id="reportId"><input type="hidden" id="reportEvaluationId"><div class="row g-3"><div class="col-md-6"><label class="form-label">Título</label><input class="form-control" id="reportTitle" required></div><div class="col-md-2"><label class="form-label">Referência</label><input type="month" class="form-control" id="reportReference"></div><div class="col-md-2"><label class="form-label">Data</label><input type="date" class="form-control" id="reportDate"></div><div class="col-md-2"><label class="form-label">Status</label><select class="form-select" id="reportStatus"><option>Rascunho</option><option>Em acompanhamento</option><option>Concluído</option><option>Arquivado</option></select></div><div class="col-12"><label class="form-label">Síntese</label><textarea class="form-control" rows="4" id="reportSummary"></textarea></div><div class="col-12"><label class="form-label">Parecer</label><textarea class="form-control" rows="6" id="reportOpinion"></textarea></div><div class="col-12"><label class="form-label">Ações do PDI</label><textarea class="form-control" rows="5" id="reportActions" placeholder="Uma ação por linha"></textarea></div></div></div><div class="modal-footer"><button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button><button class="btn btn-senac">Salvar relatório</button></div></form></div></div>
 
-            // Atualiza Parecer
-            document.getElementById('displayParecer').innerText = data.parecer;
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script>
+    const SEED_DATA = {"version":3,"meta":{"generatedAt":"2026-07-15T19:07:22.436Z","blankBase":true,"description":"Base operacional vazia; competências e biblioteca de apoio permanecem disponíveis."},"competencies":[{"id":"comp-planejamento","name":"PLANEJAMENTO","definition":"Capacidade de manter altos padrões de desempenho e organização em suas atividades com atenção ao detalhe, planejamento e responsabilidade,atuando concentrado e de forma cuidadosa com tudo o que faz, assegurando a execução correta do seu trabalho.","question":"Como essa pessoa organiza, prioriza e antecipa suas atividades para garantir entregas com qualidade e dentro dos prazos esperados?","weight":1.7857142857,"initialScore":75,"initialEvidence":""},{"id":"comp-foco-em-resultados","name":"FOCO EM RESULTADOS","definition":"Capacidade de priorizar e alcançar objetivos específicos e mensuráveis, mantendo a eficiência em suas ações, estabelecer estratégias de atuação, metas, prazos, necessidades e alocação de recursos, acompanhando a realização, o alcance e avaliação dos resultados.","question":"Como essa pessoa direciona seus esforços, acompanha suas entregas e atua para alcançar os resultados esperados dentro da realidade da sua função?","weight":0.3571428571,"initialScore":75,"initialEvidence":""},{"id":"comp-visao-sistemica","name":"VISÃO SISTÊMICA","definition":"Capacidade de visualizar globalmente o contexto em que a Entidade se insere, coletar informações do ambiente interno e externo, manter-se atualizado com os acontecimentos que impactam no negócio e nos clientes, perceber, analisar, sintetizar e discernir os dados que se mostram relevantes e pertinentes, de modo a identificar estratégias, riscos e oportunidades.","question":"Como essa pessoa compreende o contexto em que atua, conecta informações e considera impactos para apoiar melhores decisões e resultados?","weight":1.4285714286,"initialScore":75,"initialEvidence":""},{"id":"comp-foco-no-cliente","name":"FOCO NO CLIENTE","definition":"Capacidade de entender, atender e superar as expectativas dos clientes, sejam eles externos ou internos, colocando suas necessidades e satisfação no centro das decisões e ações da organização, atuando com empatia, habilidade de escuta e interpretação.","question":"Como essa pessoa compreende, conduz e acompanha as necessidades dos clientes dentro da realidade da sua função?","weight":2.5,"initialScore":75,"initialEvidence":""},{"id":"comp-comunicacao","name":"COMUNICAÇÃO","definition":"Capacidade de expressar ideias e informações com lógica e objetividade, por escrito e oralmente, garantindo a precisão e a compreensão dos assuntos tratados.","question":"Como essa pessoa transmite informações, conduz diálogos e promove entendimento dentro da realidade da sua função?","weight":2.1428571429,"initialScore":75,"initialEvidence":""},{"id":"comp-solucao-de-problemas","name":"SOLUÇÃO DE PROBLEMAS","definition":"Capacidade de analisar situações e problemas, avaliar os fatos, os dados e os riscos envolvidos, buscar alternativas de ação e decidir qual dentre elas é a mais segura e viável para a obtenção dos resultados esperados, empenhando-se em sua implementação, agindo com equilíbrio, bom senso e proatividade.","question":"Como essa pessoa analisa situações, toma decisões e conduz soluções diante dos desafios da sua realidade de atuação?","weight":0.7142857143,"initialScore":75,"initialEvidence":""},{"id":"comp-trabalho-em-equipe","name":"TRABALHO EM EQUIPE","definition":"Relacionamento Interpessoal, capacidade para desenvolver trabalhos em equipe, integrar pessoas, estimular a participação, o trabalho conjunto e o relacionamento interdepartamental, através de uma postura profissional cooperativa e colaborativa, procurando aceitar, relevar e canalizar as potencialidades, diferenças e contribuições individuais em prol dos resultados.","question":"Como essa pessoa contribui para o trabalho conjunto, para as relações da equipe e para os resultados coletivos dentro da sua realidade de atuação?","weight":1.0714285714,"initialScore":75,"initialEvidence":""}],"analysts":[],"instructors":[],"classes":[],"evaluations":[],"treatments":[],"reports":[]};
+    const STORAGE_KEY = 'senac-pdi-2026-v3';
+    const REMOTE_COLLECTIONS = { analysts:'pdi_analistas_v3', instructors:'pdi_instrutores_v3', classes:'pdi_turmas_v3', evaluations:'pdi_avaliacoes_v3', treatments:'pdi_tratativas_v3', reports:'pdi_relatorios_v3' };
+    const firebaseConfig = { apiKey:'AIzaSyBCjnhVbsDyFeRtfZepACO7NraVThqJaL4', authDomain:'pdi-instrutores.firebaseapp.com', projectId:'pdi-instrutores', storageBucket:'pdi-instrutores.firebasestorage.app', messagingSenderId:'817045522643', appId:'1:817045522643:web:8c04f64167d236b397ac26' };
+    const EVENT_STATUSES = ['Pendente','Agendado','Em andamento','Realizado','Concluído','Cancelado'];
+    const EVENT_TYPE_CONFIG = {
+      'Alinhamento': { impact:-1, label:'alinhamento de expectativa' },
+      'Feedback': { impact:1, label:'devolutiva de desenvolvimento' },
+      'Apontamento': { impact:-6, label:'ponto de atenção' },
+      'Ajuste': { impact:-4, label:'ajuste necessário' },
+      'Plano de ação': { impact:1, label:'ação de desenvolvimento' },
+      'Treinamento': { impact:3, label:'atividade de aprendizagem' },
+      'Acompanhamento': { impact:0, label:'acompanhamento contínuo' },
+      'Reunião pedagógica': { impact:1, label:'alinhamento pedagógico' },
+      'Elogio / reconhecimento': { impact:6, label:'reconhecimento de boa prática' },
+      'Ocorrência': { impact:-7, label:'ocorrência que exige acompanhamento' },
+      'Avaliação base': { impact:0, label:'registro de avaliação importada' },
+    };
+    const COMPETENCY_KEYWORDS = {
+      'comp-planejamento':['planejamento','planejar','prazo','atraso','agenda','organização','organizar','prioridade','cronograma','pontualidade','esquecimento'],
+      'comp-foco-em-resultados':['resultado','meta','indicador','entrega','desempenho','frequência','evasão','resgate','objetivo','produtividade','conclusão'],
+      'comp-visao-sistemica':['processo','instituição','senac','impacto','sistema','integração','estratégia','área','contexto','fluxo','negócio'],
+      'comp-foco-no-cliente':['aluno','estudante','cliente','atendimento','reclamação','empatia','escuta','empresa','satisfação','necessidade','acolhimento'],
+      'comp-comunicacao':['comunicação','comunicar','clareza','conflito','ruído','fala','escrita','retorno','diálogo','mensagem','entendimento'],
+      'comp-solucao-de-problemas':['problema','solução','risco','decisão','autonomia','imprevisto','alternativa','análise','resolver','proatividade','recuperação'],
+      'comp-trabalho-em-equipe':['equipe','colega','colaboração','compartilhamento','relacionamento','grupo','cooperação','apoio','integração','conjunto','time'],
+    };
+    const FEEDBACK_LIBRARY = {
+      'comp-planejamento': { recognition:'Você organiza as atividades e antecipa prazos com consistência, trazendo segurança para as entregas.', constructive:'Observei impacto em prazos e priorização. Precisamos tornar o planejamento mais visível e antecipar riscos.', question:'Quais demandas competem entre si e como você pode reorganizá-las antes que afetem a entrega?', action:'Construir um plano semanal com prioridades, responsáveis, prazos e checkpoint de riscos.', training:'Prática orientada de gestão do tempo, matriz de prioridades e planejamento reverso.' },
+      'comp-foco-em-resultados': { recognition:'Seu acompanhamento das entregas demonstra compromisso com metas e resultados sustentáveis.', constructive:'Precisamos transformar as atividades em metas observáveis, acompanhadas por indicadores e checkpoints.', question:'Qual resultado deve ser alcançado, como será medido e quando você fará o próximo acompanhamento?', action:'Definir um indicador de resultado, meta, prazo e ritual semanal de acompanhamento.', training:'Oficina de indicadores educacionais, gestão à vista e análise de resultados.' },
+      'comp-visao-sistemica': { recognition:'Você conecta suas decisões aos impactos nas turmas, áreas e resultados institucionais.', constructive:'A ação resolveu a demanda imediata, mas precisamos ampliar a leitura dos impactos no processo como um todo.', question:'Quem mais é impactado por essa decisão e quais riscos ou oportunidades institucionais ela gera?', action:'Mapear o fluxo envolvido, áreas impactadas e indicador institucional relacionado.', training:'Estudo de processos Senac, cadeia de valor e análise de impactos.' },
+      'comp-foco-no-cliente': { recognition:'Sua escuta e empatia geram confiança e respostas adequadas às necessidades dos estudantes e empresas.', constructive:'O atendimento precisa avançar da resposta reativa para a compreensão da necessidade e acompanhamento da solução.', question:'O que o cliente realmente precisa e como confirmaremos que a solução gerou satisfação?', action:'Aplicar escuta ativa, registrar a necessidade, combinar retorno e confirmar a resolução.', training:'Simulação de atendimento, escuta ativa e tratamento de situações sensíveis.' },
+      'comp-comunicacao': { recognition:'Sua comunicação foi clara, objetiva e adequada ao público, favorecendo entendimento e engajamento.', constructive:'A mensagem gerou dúvida ou ruído. Precisamos estruturar melhor contexto, expectativa e confirmação do entendimento.', question:'Qual é a mensagem principal, o comportamento esperado e como você verificará o entendimento?', action:'Usar comunicação estruturada: contexto, fato observado, impacto, combinado e confirmação.', training:'Prática de feedback, conversas difíceis e comunicação não violenta.' },
+      'comp-solucao-de-problemas': { recognition:'Você analisou o cenário, ponderou riscos e conduziu uma solução viável com autonomia.', constructive:'Antes de escalar a situação, precisamos aprofundar a causa e apresentar alternativas de solução.', question:'Qual é a causa provável, quais dados sustentam a análise e quais alternativas são viáveis?', action:'Registrar problema, causa, alternativas, riscos, decisão e verificação do resultado.', training:'Estudo de caso com análise de causa, tomada de decisão e plano de contingência.' },
+      'comp-trabalho-em-equipe': { recognition:'Sua postura colaborativa fortaleceu o trabalho conjunto e a circulação de conhecimento na equipe.', constructive:'Precisamos ampliar a participação, a cooperação e o compartilhamento com os colegas envolvidos.', question:'Como você pode envolver a equipe e transformar sua experiência em aprendizado coletivo?', action:'Compartilhar uma boa prática, pedir contribuição da equipe e registrar o combinado coletivo.', training:'Dinâmica de colaboração, acordos de equipe e aprendizagem entre pares.' },
+    };
+    const POSITIVE_WORDS = ['excelente','parabéns','evolução','melhora','proativo','autonomia','qualidade','colaborativo','cumpriu','superou','sucesso','reconhecimento'];
+    const NEGATIVE_WORDS = ['atraso','falha','reclamação','conflito','não cumpriu','dificuldade','pendência','erro','ausência','ruído','resistência','problema'];
+    let mode = 'local';
+    let auth = null, db = null, remoteUnsubscribers = [];
+    let appStarted = false, sessionActive = false, evaluationActive = false;
+    let currentEvaluationId = '', currentTreatmentId = '', activeReportId = '';
+    let evolutionChart = null;
 
-            // Atualiza Gráfico
-            updateChart(data.name, data.chartData);
-        }
+    const $ = id => document.getElementById(id);
+    const clone = value => JSON.parse(JSON.stringify(value));
+    let state = loadLocalState();
+    const nowIso = () => new Date().toISOString();
+    const today = () => new Date().toISOString().slice(0,10);
+    const currentMonth = () => new Date().toISOString().slice(0,7);
+    const uid = prefix => `${prefix}-${globalThis.crypto?.randomUUID?.() || `${Date.now()}-${Math.random().toString(16).slice(2)}`}`;
+    const normalize = value => String(value || '').normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/\u00a0/g,' ').toLowerCase().replace(/[^a-z0-9]+/g,' ').trim();
+    const esc = value => String(value ?? '').replace(/[&<>'"]/g, char => ({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[char]));
+    const formatDate = value => value ? new Date(`${value}T12:00:00`).toLocaleDateString('pt-BR') : '—';
+    const formatMonth = value => value ? value.split('-').reverse().join('/') : '—';
+    const getAnalyst = id => state.analysts.find(item => item.id === id);
+    const getInstructor = id => state.instructors.find(item => item.id === id);
+    const getClass = id => state.classes.find(item => item.id === id);
 
-        function updateChart(name, dataArr) {
-            const ctx = document.getElementById('radarChart').getContext('2d');
-            
-            if (radarChartInstance) {
-                radarChartInstance.destroy();
-            }
+    function loadLocalState(){
+      try {
+        const parsed = JSON.parse(localStorage.getItem(STORAGE_KEY));
+        if(parsed?.version === 3) return parsed;
+      } catch(error){ console.warn('Base local inválida', error); }
+      return clone(SEED_DATA);
+    }
+    function persistLocal(){ localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }
+    function toast(message){ $('toastBody').textContent = message; bootstrap.Toast.getOrCreateInstance($('appToast'), {delay:3200}).show(); }
+    function setSyncStatus(text, online=false){ $('modeText').textContent=text; $('syncDot').classList.toggle('online',online); }
+    function showLoginError(message){ $('loginError').textContent=message; $('loginError').classList.remove('d-none'); }
 
-            radarChartInstance = new Chart(ctx, {
-                type: 'radar',
-                data: {
-                    labels: ['Planejamento', 'Foco em Resultados', 'Visão Sistêmica', 'Foco no Cliente', 'Comunicação', 'Solução de Probl.', 'Trab. Equipe'],
-                    datasets: [{
-                        label: `Desempenho: ${name}`,
-                        data: dataArr,
-                        backgroundColor: 'rgba(243, 112, 33, 0.2)',
-                        borderColor: 'rgba(243, 112, 33, 1)',
-                        pointBackgroundColor: '#004a8f',
-                        borderWidth: 2
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    scales: {
-                        r: {
-                            angleLines: { color: '#e0e0e0' },
-                            grid: { color: '#e0e0e0' },
-                            pointLabels: { font: { size: 11 }, color: '#666' },
-                            ticks: { min: 0, max: 10, stepSize: 2, display: false }
-                        }
-                    },
-                    plugins: { legend: { display: false } }
-                }
-            });
-        }
+    function initializeFirebase(){
+      if(!globalThis.firebase){ showLoginError('Os recursos online não carregaram. Use o modo local ou verifique a internet.'); return; }
+      try {
+        if(!firebase.apps.length) firebase.initializeApp(firebaseConfig);
+        auth=firebase.auth(); db=firebase.firestore();
+        auth.onAuthStateChanged(async user => {
+          if(sessionStorage.getItem('pdi-local-mode') === '1') return;
+          if(user){ mode='remote'; await startRemoteMode(); }
+          else if(!appStarted){ $('loginOverlay').style.display='grid'; }
+        });
+      } catch(error){ showLoginError(`Não foi possível iniciar o acesso online: ${error.message}`); }
+    }
+    async function login(){
+      $('loginError').classList.add('d-none');
+      if(!auth) return showLoginError('A conexão online não está disponível. Use o modo local.');
+      const email=$('emailInput').value.trim(), password=$('passwordInput').value;
+      if(!email || !password) return showLoginError('Informe e-mail e senha.');
+      $('loginButton').disabled=true;
+      try { await auth.signInWithEmailAndPassword(email,password); }
+      catch(error){ showLoginError('Credenciais inválidas ou acesso não autorizado.'); }
+      finally { $('loginButton').disabled=false; }
+    }
+    function startLocalMode(){ sessionStorage.setItem('pdi-local-mode','1'); mode='local'; state=loadLocalState(); showApp(); setSyncStatus('Modo local',false); }
+    async function startRemoteMode(){
+      try {
+        setSyncStatus('Conectando...',false); await ensureRemoteSeed(); connectRemoteListeners(); showApp(); setSyncStatus('Sincronizado',true);
+      } catch(error){ console.error(error); mode='local'; state=loadLocalState(); showApp(); setSyncStatus('Local · falha na nuvem',false); toast('Não foi possível acessar o banco online. O sistema permaneceu no modo local.'); }
+    }
+    async function ensureRemoteSeed(){
+      const metaRef=db.collection('pdi_meta').doc('versao_3'); const meta=await metaRef.get();
+      if(meta.exists) return;
+      const batch=db.batch();
+      for(const [key,collection] of Object.entries(REMOTE_COLLECTIONS)) for(const entity of SEED_DATA[key]) batch.set(db.collection(collection).doc(entity.id),entity);
+      batch.set(metaRef,{version:3,seededAt:firebase.firestore.FieldValue.serverTimestamp(),sources:SEED_DATA.meta});
+      await batch.commit();
+    }
+    function connectRemoteListeners(){
+      remoteUnsubscribers.forEach(stop=>stop()); remoteUnsubscribers=[];
+      for(const [key,collection] of Object.entries(REMOTE_COLLECTIONS)){
+        const stop=db.collection(collection).onSnapshot(snapshot=>{ state[key]=snapshot.docs.map(doc=>({id:doc.id,...doc.data()})); state.version=3; state.meta=SEED_DATA.meta; persistLocal(); renderAll(); },error=>console.error(`Falha em ${collection}`,error));
+        remoteUnsubscribers.push(stop);
+      }
+    }
+    async function upsertEntity(key,entity,{render=true}={}){
+      const index=state[key].findIndex(item=>item.id===entity.id); if(index>=0) state[key][index]=entity; else state[key].push(entity);
+      persistLocal(); if(render) renderAll();
+      if(mode==='remote') try { await db.collection(REMOTE_COLLECTIONS[key]).doc(entity.id).set(entity); } catch(error){ toast(`Alteração salva localmente; falha na sincronização: ${error.message}`); }
+    }
+    async function upsertMany(key,entities){
+      const map=new Map(state[key].map(item=>[item.id,item])); entities.forEach(item=>map.set(item.id,item)); state[key]=[...map.values()]; persistLocal(); renderAll();
+      if(mode==='remote'){
+        for(let start=0;start<entities.length;start+=400){ const batch=db.batch(); entities.slice(start,start+400).forEach(item=>batch.set(db.collection(REMOTE_COLLECTIONS[key]).doc(item.id),item)); await batch.commit(); }
+      }
+    }
+    async function removeEntity(key,id,{render=true}={}){
+      state[key]=state[key].filter(item=>item.id!==id); persistLocal(); if(render) renderAll();
+      if(mode==='remote') try { await db.collection(REMOTE_COLLECTIONS[key]).doc(id).delete(); } catch(error){ toast(`Exclusão local concluída; falha na sincronização: ${error.message}`); }
+    }
 
-        function setupFeedbackListener() {
-            document.getElementById('compSelect').addEventListener('change', function(e) {
-                const comp = e.target.value;
-                document.getElementById('fb-pos').innerText = feedbackBank[comp].pos;
-                document.getElementById('fb-dev').innerText = feedbackBank[comp].dev;
-            });
-        }
+    function showApp(){
+      $('loginOverlay').style.display='none'; $('appContent').classList.remove('d-none');
+      if(!appStarted){ appStarted=true; buildCompetencyForm(); bindEvents(); initChart(); }
+      renderAll();
+    }
+    function bindEvents(){
+      $('logoutButton').addEventListener('click',logout); $('analystSelect').addEventListener('change',selectionChanged); $('instructorSelect').addEventListener('change',instructorChanged); $('classSelect').addEventListener('change',selectionChanged); $('startSessionButton').addEventListener('click',startSession);
+      $('newEvaluationButton').addEventListener('click',newEvaluation); $('saveEvaluationButton').addEventListener('click',saveEvaluation); $('deleteCurrentEvaluationButton').addEventListener('click',()=>currentEvaluationId&&deleteEvaluation(currentEvaluationId));
+      $('saveTreatmentButton').addEventListener('click',saveTreatment); $('cancelTreatmentButton').addEventListener('click',resetTreatmentForm); $('saveReportButton').addEventListener('click',()=>openReportModal()); $('openReportsButton').addEventListener('click',()=>showTab('#tabRegistros'));
+      $('printReportButton').addEventListener('click',printCurrentReport); $('chartMetric').addEventListener('change',renderChart);
+      $('addAnalystButton').addEventListener('click',()=>openAnalystModal()); $('addInstructorButton').addEventListener('click',()=>openInstructorModal()); $('addClassButton').addEventListener('click',()=>openClassModal());
+      $('analystForm').addEventListener('submit',saveAnalyst); $('instructorForm').addEventListener('submit',saveInstructor); $('classForm').addEventListener('submit',saveClass); $('reportForm').addEventListener('submit',saveReportFromModal);
+      $('classInstructors').addEventListener('change',refreshCurrentInstructorOptions); $('instructorSearch').addEventListener('input',renderInstructorTable); $('classSearch').addEventListener('input',renderClassTable); $('recordsSearch').addEventListener('input',renderRecordTables); $('recordsTypeFilter').addEventListener('change',renderRecordTables);
+      $('pdiImportInput').addEventListener('change',importPdiWorkbook); $('globalPdiImportInput').addEventListener('change',importPdiWorkbook); $('reportImportInput').addEventListener('change',importGeneralReport); $('exportBackupButton').addEventListener('click',exportBackup); $('backupImportInput').addEventListener('change',importBackup); $('resetSeedButton').addEventListener('click',resetSeed);
+      $('referenceInput').addEventListener('input',draftChanged); $('assessmentDateInput').addEventListener('input',draftChanged); $('opinionInput').addEventListener('input',draftChanged);
+      ['treatmentType','treatmentStatus','treatmentPriority','treatmentEffect','treatmentDueDate','treatmentFollowUpDate','treatmentTitle','treatmentText','treatmentNextAction'].forEach(id=>$(id).addEventListener('input',treatmentDraftChanged));
+      $('treatmentCompetencies').addEventListener('change',treatmentDraftChanged);
+      $('feedbackSupport').addEventListener('click',event=>{ const button=event.target.closest('[data-support-text]'); if(!button)return; insertSupportText(button.dataset.target||'treatmentText',button.dataset.supportText); });
+    }
+    function logout(){
+      sessionActive=false; evaluationActive=false; remoteUnsubscribers.forEach(stop=>stop()); remoteUnsubscribers=[];
+      if(mode==='remote'&&auth) auth.signOut();
+      sessionStorage.removeItem('pdi-local-mode'); location.reload();
+    }
+    function showTab(selector){ bootstrap.Tab.getOrCreateInstance(document.querySelector(`[data-bs-target="${selector}"]`)).show(); }
 
-        function copyText(elementId) {
-            const text = document.getElementById(elementId).innerText;
-            navigator.clipboard.writeText(text).then(() => {
-                alert("Texto copiado para a área de transferência!");
-            });
-        }
+    function buildCompetencyForm(){
+      $('competenciesContainer').innerHTML=state.competencies.map((comp,index)=>`<div class="competency-card" data-comp="${esc(comp.id)}"><div class="d-flex gap-3 align-items-start"><div class="comp-number">${index+1}</div><div class="flex-grow-1"><div class="d-flex flex-wrap justify-content-between gap-2"><strong>${esc(comp.name)}</strong><span class="weight-pill">Peso ${(comp.weight*10).toLocaleString('pt-BR',{maximumFractionDigits:1})}%</span></div><div class="question mt-2"><i class="bi bi-question-circle me-1"></i>${esc(comp.question)}</div><div class="row g-2 mt-1"><div class="col-md-5"><label class="form-label small">Nível observado</label><select class="form-select score-input" data-comp="${esc(comp.id)}"><option value="25">Não atende</option><option value="50">Atende parcialmente</option><option value="75" selected>Atende</option><option value="100">Atende com excelência</option></select></div><div class="col-md-7"><label class="form-label small">Evidências</label><textarea class="form-control evidence-input" data-comp="${esc(comp.id)}" rows="2" placeholder="Registre fatos e exemplos observáveis..."></textarea></div></div></div></div></div>`).join('');
+      document.querySelectorAll('.score-input,.evidence-input').forEach(input=>input.addEventListener('input',draftChanged));
+      $('treatmentCompetencies').innerHTML=state.competencies.map((comp,index)=>`<label class="competency-chip" title="Relacionar ${esc(comp.name)}"><input type="checkbox" value="${esc(comp.id)}"><span>${index+1}. ${esc(comp.name)}</span></label>`).join('');
+      $('chartMetric').innerHTML='<option value="overall">Pontuação ponderada</option>'+state.competencies.map(comp=>`<option value="${esc(comp.id)}">${esc(comp.name)}</option>`).join('')+'<option value="treatments">Volume de tratativas</option><option value="reports">Relatórios salvos</option>';
+    }
+    function renderAll(){ if(!appStarted) return; renderSelectors(); renderStats(); renderAnalystTable(); renderInstructorTable(); renderClassTable(); renderRecordTables(); renderTreatments(); renderCompetencyReference(); renderTreatmentIntelligence(); renderProfileSummary(); renderReportPreview(); renderChart(); }
+    function renderSelectors(){
+      const analystValue=$('analystSelect').value, instructorValue=$('instructorSelect').value, classValue=$('classSelect').value;
+      const activeAnalysts=state.analysts.filter(item=>item.active!==false).sort((a,b)=>a.name.localeCompare(b.name,'pt-BR'));
+      $('analystSelect').innerHTML='<option value="">Selecione...</option>'+activeAnalysts.map(item=>`<option value="${esc(item.id)}">${esc(item.name)}</option>`).join('');
+      if(activeAnalysts.some(item=>item.id===analystValue)) $('analystSelect').value=analystValue;
+      const activeInstructors=state.instructors.filter(item=>item.active!==false).sort((a,b)=>a.name.localeCompare(b.name,'pt-BR'));
+      $('instructorSelect').innerHTML='<option value="">Selecione...</option>'+activeInstructors.map(item=>`<option value="${esc(item.id)}">${esc(item.name)}</option>`).join('');
+      if(activeInstructors.some(item=>item.id===instructorValue)) $('instructorSelect').value=instructorValue;
+      updateClassSelector(classValue);
+    }
+    function updateClassSelector(preferred=''){
+      const instructorId=$('instructorSelect').value; $('classSelect').disabled=!instructorId;
+      if(!instructorId){ $('classSelect').innerHTML='<option value="">Selecione o instrutor primeiro</option>'; return; }
+      const options=state.classes.filter(item=>item.instructorIds?.includes(instructorId)).sort((a,b)=>a.code.localeCompare(b.code,'pt-BR'));
+      $('classSelect').innerHTML='<option value="">Selecione...</option><option value="__general__">PDI geral (sem turma específica)</option>'+options.map(item=>`<option value="${esc(item.id)}">${esc(item.code)} · ${esc(item.course)} · ${esc(item.status)}</option>`).join('');
+      if(preferred==='__general__'||options.some(item=>item.id===preferred)) $('classSelect').value=preferred;
+    }
+    function selectionChanged(){ sessionActive=false; evaluationActive=false; currentEvaluationId=''; activeReportId=''; setSessionEnabled(false); $('sessionBanner').classList.add('d-none'); renderTreatments(); renderProfileSummary(); renderReportPreview(); renderChart(); }
+    function instructorChanged(){ updateClassSelector(); selectionChanged(); }
+    function selectedContext(){ return { analystId:$('analystSelect').value, instructorId:$('instructorSelect').value, classId:$('classSelect').value==='__general__'?'':$('classSelect').value }; }
+    function startSession(){
+      const ctx=selectedContext(); if(!ctx.analystId||!ctx.instructorId||!$('classSelect').value) return toast('Selecione analista, instrutor e turma (ou PDI geral).');
+      const sessionType=$('sessionType').value; sessionActive=true; evaluationActive=sessionType==='Avaliação'; activeReportId=''; setSessionEnabled(true); resetTreatmentForm();
+      if(evaluationActive)newEvaluation(false); else { currentEvaluationId=''; $('assessmentFieldset').disabled=true; $('evaluationStatusInput').value='Opcional — não iniciada'; }
+      const analyst=getAnalyst(ctx.analystId), instructor=getInstructor(ctx.instructorId), cls=getClass(ctx.classId);
+      $('sessionBanner').innerHTML=`<div class="d-flex flex-wrap justify-content-between align-items-center gap-2"><div><strong>${esc(sessionType)} em andamento</strong><div class="small text-secondary">${esc(analyst?.name)} · ${esc(instructor?.name)} · ${cls?`${esc(cls.code)} — ${esc(cls.course)}`:'Acompanhamento geral'}</div></div><span class="badge text-bg-success">Ativo</span></div>`;
+      $('sessionBanner').classList.remove('d-none'); renderAll();
+    }
+    function setSessionEnabled(enabled){ $('treatmentFieldset').disabled=!enabled; $('reportFieldset').disabled=!enabled; $('assessmentFieldset').disabled=!(enabled&&evaluationActive); }
 
-        // Inicia a aplicação
-        window.onload = initApp;
+    function latestEvaluation(instructorId){ return state.evaluations.filter(item=>item.instructorId===instructorId).sort((a,b)=>(b.date||b.reference||'').localeCompare(a.date||a.reference||''))[0]; }
+    function newEvaluation(showMessage=true){
+      if(!sessionActive){ if(showMessage) toast('Inicie o atendimento antes de criar uma avaliação.'); return; }
+      evaluationActive=true; $('assessmentFieldset').disabled=false; currentEvaluationId=''; const baseline=currentCompetencyProfile($('instructorSelect').value,{includeDraft:false}).scores;
+      $('referenceInput').value=currentMonth(); $('assessmentDateInput').value=today(); $('evaluationStatusInput').value='Novo'; $('opinionInput').value='';
+      state.competencies.forEach(comp=>{ document.querySelector(`.score-input[data-comp="${comp.id}"]`).value=Math.round(baseline?.[comp.id]||75); document.querySelector(`.evidence-input[data-comp="${comp.id}"]`).value=''; });
+      $('deleteCurrentEvaluationButton').classList.add('d-none'); draftChanged();
+    }
+    function getAssessmentDraft(){
+      const ctx=selectedContext(); const scores={}, evidence={};
+      state.competencies.forEach(comp=>{ scores[comp.id]=Number(document.querySelector(`.score-input[data-comp="${comp.id}"]`)?.value||75); evidence[comp.id]=document.querySelector(`.evidence-input[data-comp="${comp.id}"]`)?.value.trim()||''; });
+      return { id:currentEvaluationId||uid('avaliacao'), ...ctx, reference:$('referenceInput').value, date:$('assessmentDateInput').value, scores, evidence, opinion:$('opinionInput').value.trim() };
+    }
+    function weightedScore(scores){ return state.competencies.reduce((sum,comp)=>sum+(Number(scores?.[comp.id]||0)/100)*comp.weight,0); }
+    function classification(score){ if(score<=2.5)return'Não atende às expectativas'; if(score<=5)return'Atende parcialmente às expectativas'; if(score<=8)return'Atende às expectativas'; return'Supera as expectativas'; }
+    function draftChanged(){
+      if(!appStarted)return; const draft=getAssessmentDraft(), score=weightedScore(draft.scores); $('weightedScore').textContent=`${score.toLocaleString('pt-BR',{minimumFractionDigits:3,maximumFractionDigits:3})} / 10`; $('scoreClassification').textContent=classification(score); renderReportPreview(); renderChart();
+    }
+    async function saveEvaluation(){
+      if(!sessionActive)return; const draft=getAssessmentDraft(); if(!draft.reference||!draft.date)return toast('Informe referência e data da avaliação.');
+      const existing=state.evaluations.find(item=>item.id===draft.id); const timestamp=nowIso(); const entity={...draft,officialScore:weightedScore(draft.scores),source:existing?.source||'Registro no sistema',createdAt:existing?.createdAt||timestamp,updatedAt:timestamp};
+      currentEvaluationId=entity.id; await upsertEntity('evaluations',entity); $('evaluationStatusInput').value='Salvo'; $('deleteCurrentEvaluationButton').classList.remove('d-none'); toast('Avaliação salva e gráfico atualizado.');
+    }
+    function loadEvaluation(id){
+      const item=state.evaluations.find(record=>record.id===id); if(!item)return; const instructor=getInstructor(item.instructorId); if(!instructor)return;
+      $('analystSelect').value=item.analystId||state.analysts.find(a=>a.active!==false)?.id||''; $('instructorSelect').value=item.instructorId; updateClassSelector(item.classId||'__general__'); $('classSelect').value=item.classId||'__general__';
+      sessionActive=true; evaluationActive=true; currentEvaluationId=item.id; setSessionEnabled(true); $('referenceInput').value=item.reference||''; $('assessmentDateInput').value=item.date||''; $('evaluationStatusInput').value='Editando'; $('opinionInput').value=item.opinion||'';
+      state.competencies.forEach(comp=>{ document.querySelector(`.score-input[data-comp="${comp.id}"]`).value=item.scores?.[comp.id]||75; document.querySelector(`.evidence-input[data-comp="${comp.id}"]`).value=item.evidence?.[comp.id]||''; });
+      $('deleteCurrentEvaluationButton').classList.remove('d-none'); $('sessionBanner').innerHTML=`<strong>Editando avaliação de ${esc(instructor.name)}</strong><div class="small text-secondary">Referência ${esc(formatMonth(item.reference))}</div>`; $('sessionBanner').classList.remove('d-none'); showTab('#tabAtendimento'); draftChanged(); window.scrollTo({top:0,behavior:'smooth'});
+    }
+    async function deleteEvaluation(id){
+      const related=state.reports.filter(item=>item.evaluationId===id); if(!confirm(`Excluir esta avaliação${related.length?` e ${related.length} relatório(s) relacionado(s)`:''}?`))return;
+      for(const report of related) await removeEntity('reports',report.id,{render:false}); await removeEntity('evaluations',id); currentEvaluationId=''; newEvaluation(false); toast('Avaliação excluída.');
+    }
+    function printEvaluation(id){
+      const item=state.evaluations.find(record=>record.id===id); if(!item)return; const instructor=getInstructor(item.instructorId),cls=getClass(item.classId),analyst=getAnalyst(item.analystId);
+      $('printArea').innerHTML=`<div class="print-header"><h2>Avaliação de competências · Senac 2026</h2><div>${esc(formatMonth(item.reference))}</div></div><p><strong>Instrutor:</strong> ${esc(instructor?.fullName||instructor?.name||'—')}<br><strong>Turma:</strong> ${esc(cls?`${cls.code} — ${cls.course}`:'PDI geral')}<br><strong>Analista:</strong> ${esc(analyst?.name||'Não informado')}<br><strong>Data:</strong> ${esc(formatDate(item.date))}<br><strong>Pontuação:</strong> ${weightedScore(item.scores).toLocaleString('pt-BR',{minimumFractionDigits:3,maximumFractionDigits:3})} de 10</p><h4>Competências</h4>${state.competencies.map(comp=>`<div class="mb-3"><strong>${esc(comp.name)} — ${Number(item.scores?.[comp.id]||0)}%</strong><div>${esc(item.evidence?.[comp.id]||'Sem evidência registrada.').replace(/\n/g,'<br>')}</div></div>`).join('')}<h4>Parecer</h4><p>${esc(item.opinion||'—').replace(/\n/g,'<br>')}</p>`; window.print();
+    }
 
-    </script>
+    function selectedTreatmentCompetencies(){ return [...document.querySelectorAll('#treatmentCompetencies input:checked')].map(input=>input.value); }
+    function inferCompetencyIds(event){
+      const text=normalize([event.type,event.title,event.text,event.nextAction].join(' '));
+      return state.competencies.filter(comp=>(COMPETENCY_KEYWORDS[comp.id]||[]).some(keyword=>text.includes(normalize(keyword)))).map(comp=>comp.id);
+    }
+    function analyzeEvent(event){
+      const competencyIds=[...new Set([...(event.competencyIds||[]),...inferCompetencyIds(event)])];
+      let base=EVENT_TYPE_CONFIG[event.type]?.impact||0; const text=normalize([event.title,event.text,event.nextAction].join(' '));
+      const positives=POSITIVE_WORDS.filter(word=>text.includes(normalize(word))).length, negatives=NEGATIVE_WORDS.filter(word=>text.includes(normalize(word))).length;
+      if(event.effect==='positive')base=Math.max(4,Math.abs(base)); else if(event.effect==='negative')base=-Math.max(4,Math.abs(base)); else if(event.effect==='neutral')base=0; else base+=Math.max(-3,Math.min(3,(positives-negatives)*2));
+      const status=event.status||'Pendente';
+      if(status==='Cancelado')base=0;
+      else if(base<0&&['Realizado','Concluído'].includes(status))base=1;
+      else if(base<0&&status==='Em andamento')base*=.55;
+      else if(base<0&&status==='Agendado')base*=.75;
+      else if(base>0&&status==='Pendente')base*=.35;
+      else if(base>0&&status==='Agendado')base*=.45;
+      else if(base>0&&status==='Em andamento')base*=.7;
+      const priorityFactor={Baixa:.75,Média:1,Alta:1.25,Crítica:1.5}[event.priority]||1;
+      const delta=Math.round(base*priorityFactor); const impacts=Object.fromEntries(competencyIds.map(id=>[id,delta]));
+      const primary=competencyIds[0], library=FEEDBACK_LIBRARY[primary];
+      const suggestions=library ? (delta<0?[library.constructive,library.action,library.training]:delta>0?[library.recognition,library.action]:[library.question,library.action]) : [];
+      return { competencyIds,impacts,delta,positives,negatives,suggestions,summary:competencyIds.length?`${competencyIds.length} competência(s) relacionada(s); impacto ${delta>0?'+':''}${delta} ponto(s) no perfil atual.`:'Nenhuma competência foi identificada automaticamente. Selecione ao menos uma para relacionar o evento ao perfil.' };
+    }
+    function getTreatmentDraft(){
+      const ctx=selectedContext();
+      return { id:currentTreatmentId||'',...ctx,date:$('treatmentDate').value,type:$('treatmentType').value,status:$('treatmentStatus').value,priority:$('treatmentPriority').value,effect:$('treatmentEffect').value,dueDate:$('treatmentDueDate').value,followUpDate:$('treatmentFollowUpDate').value,title:$('treatmentTitle').value.trim(),text:$('treatmentText').value.trim(),nextAction:$('treatmentNextAction').value.trim(),competencyIds:selectedTreatmentCompetencies() };
+    }
+    function currentCompetencyProfile(instructorId,{includeDraft=true}={}){
+      const latest=latestEvaluation(instructorId); const scores=Object.fromEntries(state.competencies.map(comp=>[comp.id,Number(latest?.scores?.[comp.id]??75)])); const baseline={...scores};
+      const events=state.treatments.filter(item=>item.instructorId===instructorId&&item.id!==currentTreatmentId);
+      if(includeDraft&&sessionActive&&instructorId===$('instructorSelect').value){ const draft=getTreatmentDraft(); if(draft.title||draft.text||draft.nextAction||draft.competencyIds.length)events.push(draft); }
+      const totals=Object.fromEntries(state.competencies.map(comp=>[comp.id,0]));
+      events.forEach(event=>{ const analysis=analyzeEvent(event); Object.entries(analysis.impacts).forEach(([id,delta])=>totals[id]=(totals[id]||0)+Number(delta||0)); });
+      state.competencies.forEach(comp=>scores[comp.id]=Math.max(25,Math.min(100,Math.round(scores[comp.id]+totals[comp.id]))));
+      return { scores,baseline,totals,events,latestEvaluation:latest };
+    }
+    function treatmentDraftChanged(){ renderTreatmentIntelligence(); renderProfileSummary(); renderReportPreview(); renderChart(); }
+    function renderTreatmentIntelligence(){
+      if(!$('treatmentIntelligence'))return; if(!sessionActive){ $('treatmentIntelligence').innerHTML='<div class="small text-secondary"><i class="bi bi-stars me-1"></i>Inicie um atendimento para ativar a análise inteligente.</div>'; $('feedbackSupport').innerHTML=''; return; }
+      const analysis=analyzeEvent(getTreatmentDraft());
+      const chips=analysis.competencyIds.map(id=>{const comp=state.competencies.find(item=>item.id===id),delta=analysis.impacts[id]||0;return`<span class="badge rounded-pill ${delta>0?'text-bg-success':delta<0?'text-bg-danger':'text-bg-secondary'}">${esc(comp?.name||id)} ${delta>0?'+':''}${delta}</span>`}).join(' ');
+      $('treatmentIntelligence').innerHTML=`<div class="d-flex gap-2"><i class="bi bi-stars text-primary"></i><div><strong class="small">Leitura inteligente do evento</strong><div class="small ${analysis.delta>0?'impact-positive':analysis.delta<0?'impact-negative':'impact-neutral'}">${esc(analysis.summary)}</div>${chips?`<div class="d-flex flex-wrap gap-1 mt-2">${chips}</div>`:''}<div class="small text-secondary mt-2">O status altera o peso: pendências mantêm o alerta; eventos concluídos sinalizam evolução.</div></div></div>`;
+      renderFeedbackSupport(analysis);
+    }
+    function renderFeedbackSupport(analysis){
+      const ids=analysis.competencyIds.length?analysis.competencyIds.slice(0,2):state.competencies.slice(0,2).map(comp=>comp.id);
+      $('feedbackSupport').innerHTML=ids.map(id=>{ const comp=state.competencies.find(item=>item.id===id),lib=FEEDBACK_LIBRARY[id]; if(!lib)return''; const rows=[['Reconhecimento',lib.recognition,'treatmentText'],['Feedback construtivo',lib.constructive,'treatmentText'],['Pergunta norteadora',lib.question,'treatmentText'],['Ação sugerida',lib.action,'treatmentNextAction'],['Treinamento',lib.training,'treatmentNextAction']]; return`<div class="support-item mb-2"><strong class="small">${esc(comp?.name||id)}</strong><div class="d-grid gap-1 mt-2">${rows.map(([label,text,target])=>`<button type="button" class="btn btn-sm btn-light" data-target="${target}" data-support-text="${esc(text)}"><strong>${label}:</strong> ${esc(text)}</button>`).join('')}</div></div>`; }).join('');
+    }
+    function insertSupportText(targetId,text){ const field=$(targetId),prefix=field.value.trim()?`${field.value.trim()}\n`:''; field.value=`${prefix}${text}`; field.dispatchEvent(new Event('input',{bubbles:true})); field.focus(); }
+    function renderProfileSummary(){
+      if(!$('profileSummary'))return; const instructorId=$('instructorSelect').value; if(!instructorId){ $('profileSummary').innerHTML='<div class="small text-secondary">Selecione um instrutor para visualizar o perfil vivo de competências.</div>'; return; }
+      const profile=currentCompetencyProfile(instructorId,{includeDraft:true});
+      $('profileSummary').innerHTML=`<div class="small fw-semibold mb-2">Perfil atual moldado por avaliações e eventos</div><div class="row g-2">${state.competencies.map(comp=>{const score=profile.scores[comp.id],delta=profile.totals[comp.id]||0;return`<div class="col-6"><div class="d-flex justify-content-between gap-2 small"><span class="text-truncate" title="${esc(comp.name)}">${esc(comp.name)}</span><strong>${score}% ${delta?`<span class="${delta>0?'impact-positive':'impact-negative'}">(${delta>0?'+':''}${delta})</span>`:''}</strong></div><div class="profile-bar"><span style="width:${score}%"></span></div></div>`}).join('')}</div>`;
+    }
+    function resetTreatmentForm(){
+      currentTreatmentId=''; $('treatmentDate').value=today(); const sessionType=$('sessionType').value; $('treatmentType').value=EVENT_TYPE_CONFIG[sessionType]?sessionType:'Acompanhamento'; $('treatmentStatus').value='Pendente'; $('treatmentPriority').value='Média'; $('treatmentEffect').value='auto'; $('treatmentDueDate').value=''; $('treatmentFollowUpDate').value=''; $('treatmentTitle').value=''; $('treatmentText').value=''; $('treatmentNextAction').value=''; document.querySelectorAll('#treatmentCompetencies input').forEach(input=>input.checked=false); $('saveTreatmentButton').innerHTML='<i class="bi bi-plus-circle me-1"></i> Registrar evento'; $('cancelTreatmentButton').classList.add('d-none'); renderTreatmentIntelligence();
+    }
+    async function saveTreatment(){
+      if(!sessionActive)return; const draft=getTreatmentDraft(); if(!draft.title&&!draft.text)return toast('Informe o título ou a descrição do evento.'); if(!draft.date)return toast('Informe a data do evento.'); const existing=state.treatments.find(item=>item.id===currentTreatmentId),timestamp=nowIso(),analysis=analyzeEvent(draft);
+      const item={...draft,id:currentTreatmentId||uid('evento'),competencyIds:analysis.competencyIds,impacts:analysis.impacts,analysisSummary:analysis.summary,suggestions:analysis.suggestions,createdAt:existing?.createdAt||timestamp,updatedAt:timestamp}; await upsertEntity('treatments',item,{render:false}); resetTreatmentForm(); renderAll(); toast(existing?'Evento atualizado e perfil recalculado.':'Evento registrado e competências atualizadas.');
+    }
+    function editTreatment(id){
+      const item=state.treatments.find(record=>record.id===id); if(!item)return; $('analystSelect').value=item.analystId||$('analystSelect').value; $('instructorSelect').value=item.instructorId; updateClassSelector(item.classId||'__general__'); $('classSelect').value=item.classId||'__general__'; $('sessionType').value=EVENT_TYPE_CONFIG[item.type]?item.type:'Acompanhamento'; sessionActive=true; evaluationActive=false; setSessionEnabled(true); currentTreatmentId=id; $('treatmentDate').value=item.date||today(); $('treatmentType').value=item.type||'Acompanhamento'; $('treatmentStatus').value=item.status||'Pendente'; $('treatmentPriority').value=item.priority||'Média'; $('treatmentEffect').value=item.effect||'auto'; $('treatmentDueDate').value=item.dueDate||''; $('treatmentFollowUpDate').value=item.followUpDate||''; $('treatmentTitle').value=item.title||''; $('treatmentText').value=item.text||''; $('treatmentNextAction').value=item.nextAction||''; document.querySelectorAll('#treatmentCompetencies input').forEach(input=>input.checked=(item.competencyIds||[]).includes(input.value)); $('saveTreatmentButton').innerHTML='<i class="bi bi-save me-1"></i> Atualizar evento'; $('cancelTreatmentButton').classList.remove('d-none'); showTab('#tabAtendimento'); renderAll();
+    }
+    async function quickUpdateTreatmentStatus(id,status){ const item=state.treatments.find(record=>record.id===id); if(!item)return; const analysis=analyzeEvent({...item,status}); await upsertEntity('treatments',{...item,status,impacts:analysis.impacts,analysisSummary:analysis.summary,updatedAt:nowIso()}); toast(`Situação alterada para ${status}; perfil recalculado.`); }
+    async function deleteTreatment(id){ if(confirm('Excluir este evento/tratativa? O impacto será removido do perfil do instrutor.')){ await removeEntity('treatments',id); if(currentTreatmentId===id)resetTreatmentForm(); toast('Evento excluído e perfil recalculado.'); } }
+    function statusOptions(selected){ return EVENT_STATUSES.map(status=>`<option ${status===selected?'selected':''}>${status}</option>`).join(''); }
+    function isOverdue(item){ return item.dueDate&&item.dueDate<today()&&!['Realizado','Concluído','Cancelado'].includes(item.status); }
+    function printTreatment(id){
+      const item=state.treatments.find(record=>record.id===id); if(!item)return; const instructor=getInstructor(item.instructorId),cls=getClass(item.classId),analyst=getAnalyst(item.analystId),analysis=analyzeEvent(item); $('printArea').innerHTML=`<div class="print-header"><h2>Registro de acompanhamento · Senac 2026</h2><div>${esc(item.title||item.type)}</div></div><p><strong>Instrutor:</strong> ${esc(instructor?.fullName||instructor?.name||'—')}<br><strong>Turma:</strong> ${esc(cls?`${cls.code} — ${cls.course}`:'Acompanhamento geral')}<br><strong>Analista:</strong> ${esc(analyst?.name||'Não informado')}<br><strong>Data:</strong> ${esc(formatDate(item.date))}<br><strong>Tipo:</strong> ${esc(item.type)}<br><strong>Situação:</strong> ${esc(item.status||'Pendente')}<br><strong>Prioridade:</strong> ${esc(item.priority||'Média')}<br><strong>Prazo:</strong> ${esc(formatDate(item.dueDate))}<br><strong>Próximo acompanhamento:</strong> ${esc(formatDate(item.followUpDate))}</p><h4>Registro</h4><p>${esc(item.text||'—').replace(/\n/g,'<br>')}</p><h4>Encaminhamento</h4><p>${esc(item.nextAction||'—').replace(/\n/g,'<br>')}</p><h4>Competências relacionadas</h4><ul>${analysis.competencyIds.map(id=>`<li>${esc(state.competencies.find(comp=>comp.id===id)?.name||id)}: impacto ${analysis.impacts[id]>0?'+':''}${analysis.impacts[id]}</li>`).join('')||'<li>Nenhuma competência relacionada.</li>'}</ul>`; window.print();
+    }
+    function renderTreatments(){
+      const instructorId=$('instructorSelect').value,classId=$('classSelect').value==='__general__'?'':$('classSelect').value; const items=state.treatments.filter(item=>!instructorId||item.instructorId===instructorId).filter(item=>!classId||item.classId===classId).sort((a,b)=>(b.date||'').localeCompare(a.date||'')).slice(0,12); const pending=items.filter(item=>!['Realizado','Concluído','Cancelado'].includes(item.status)).length; $('pendingCounter').textContent=pending?`${pending} em acompanhamento`:'Nenhuma pendência';
+      $('treatmentsContainer').innerHTML=items.length?items.map(item=>{const analysis=analyzeEvent(item),dueClass=isOverdue(item)?'overdue':'text-secondary';return`<div class="timeline-item"><div class="d-flex justify-content-between gap-2"><div><strong class="small">${esc(item.title||item.type)}</strong><div class="small text-secondary">${esc(item.type)} · ${esc(formatDate(item.date))} · ${esc(getAnalyst(item.analystId)?.name||'Sem analista')}</div></div><div class="mini-actions text-nowrap"><button class="btn btn-sm btn-link" onclick="printTreatment('${esc(item.id)}')" title="Imprimir"><i class="bi bi-printer"></i></button><button class="btn btn-sm btn-link" onclick="editTreatment('${esc(item.id)}')" title="Editar"><i class="bi bi-pencil"></i></button><button class="btn btn-sm btn-link text-danger" onclick="deleteTreatment('${esc(item.id)}')" title="Excluir"><i class="bi bi-trash"></i></button></div></div><div class="d-flex flex-wrap gap-2 align-items-center my-2"><select class="form-select status-select" onchange="quickUpdateTreatmentStatus('${esc(item.id)}',this.value)">${statusOptions(item.status||'Pendente')}</select><span class="badge text-bg-light">${esc(item.priority||'Média')}</span>${item.dueDate?`<span class="small ${dueClass}"><i class="bi bi-calendar-event me-1"></i>${isOverdue(item)?'Atrasado: ':''}${esc(formatDate(item.dueDate))}</span>`:''}</div><div class="small">${esc(item.text||'')}</div>${item.nextAction?`<div class="small mt-1"><strong>Próxima ação:</strong> ${esc(item.nextAction)}</div>`:''}<div class="d-flex flex-wrap gap-1 mt-2">${analysis.competencyIds.map(id=>`<span class="badge rounded-pill text-bg-light">${esc(state.competencies.find(comp=>comp.id===id)?.name||id)} ${analysis.impacts[id]>0?'+':''}${analysis.impacts[id]}</span>`).join('')}</div></div>`}).join(''):'<div class="empty-state py-3"><i class="bi bi-chat-left-dots"></i>Sem eventos neste contexto.</div>';
+    }
+
+    function generatedReport(){
+      const ctx=selectedContext(), assessment=evaluationActive?getAssessmentDraft():null, profile=currentCompetencyProfile(ctx.instructorId,{includeDraft:true});
+      const scores=assessment?.scores||profile.scores, reference=assessment?.reference||currentMonth(), date=assessment?.date||today(), instructor=getInstructor(ctx.instructorId), cls=getClass(ctx.classId), score=weightedScore(scores), ordered=[...state.competencies].sort((a,b)=>scores[b.id]-scores[a.id]);
+      const strengths=ordered.filter(comp=>scores[comp.id]>=75).slice(0,3).map(comp=>comp.name), development=ordered.filter(comp=>scores[comp.id]<75).map(comp=>comp.name);
+      const events=state.treatments.filter(item=>item.instructorId===ctx.instructorId&&(!ctx.classId||item.classId===ctx.classId)&&item.id!==currentTreatmentId);
+      const draftEvent=sessionActive?getTreatmentDraft():null; if(draftEvent&&(draftEvent.title||draftEvent.text||draftEvent.nextAction))events.push(draftEvent);
+      const openEvents=events.filter(item=>!['Realizado','Concluído','Cancelado'].includes(item.status||'Pendente')), completedEvents=events.filter(item=>['Realizado','Concluído'].includes(item.status));
+      const developmentActions=development.map(name=>`Definir ação mensurável para desenvolver ${name}.`), eventActions=openEvents.map(item=>item.nextAction).filter(Boolean);
+      const actions=[...new Set([...eventActions,...developmentActions])]; if(!actions.length)actions.push('Manter os pontos fortes e compartilhar boas práticas com a equipe.');
+      const titlePrefix=evaluationActive?'PDI':'Relatório de acompanhamento';
+      const contextText=cls?`Turma ${cls.code} (${cls.course}).`:'Acompanhamento geral do instrutor.';
+      const eventText=`${events.length} evento(s) relacionado(s): ${openEvents.length} em acompanhamento e ${completedEvents.length} realizado(s)/concluído(s).`;
+      return { id:'',evaluationId:evaluationActive?currentEvaluationId:'',instructorId:ctx.instructorId,classId:ctx.classId,analystId:ctx.analystId,reference,date,title:`${titlePrefix} ${formatMonth(reference)} - ${instructor?.fullName||instructor?.name||'Instrutor'}`,status:openEvents.length?'Em acompanhamento':'Rascunho',summary:`Perfil integrado atual: ${score.toLocaleString('pt-BR',{minimumFractionDigits:3,maximumFractionDigits:3})} de 10 — ${classification(score)}. ${contextText} ${eventText} ${strengths.length?`Destaques: ${strengths.join(', ')}.`:''}`,opinion:assessment?.opinion||'',actions,profileSnapshot:scores};
+    }
+    function renderReportPreview(){
+      let report=activeReportId?state.reports.find(item=>item.id===activeReportId):null;
+      if(!report&&!sessionActive&&$('instructorSelect').value){ report=state.reports.filter(item=>item.instructorId===$('instructorSelect').value).sort((a,b)=>(b.date||b.reference||'').localeCompare(a.date||a.reference||''))[0]; if(report)activeReportId=report.id; }
+      if(!report&&sessionActive)report=generatedReport();
+      if(!report){ $('reportPreview').innerHTML='<div class="empty-state"><i class="bi bi-file-earmark-text"></i>Inicie um atendimento ou abra um relatório salvo.</div>'; return; }
+      const instructor=getInstructor(report.instructorId), cls=getClass(report.classId);
+      $('reportPreview').innerHTML=`<div class="d-flex justify-content-between gap-2"><div><h5 class="mb-1">${esc(report.title)}</h5><div class="small text-secondary">${esc(instructor?.fullName||instructor?.name||'')} ${cls?`· ${esc(cls.code)}`:''} · ${esc(formatMonth(report.reference))}</div></div><span class="badge text-bg-light align-self-start">${esc(report.status)}</span></div><hr><p>${esc(report.summary||'').replace(/\n/g,'<br>')}</p>${report.opinion?`<h6>Parecer</h6><p>${esc(report.opinion).replace(/\n/g,'<br>')}</p>`:''}${report.actions?.length?`<h6>Ações do PDI</h6><ol class="mb-0">${report.actions.map(action=>`<li>${esc(action)}</li>`).join('')}</ol>`:''}${report.id?`<div class="d-flex flex-wrap gap-2 mt-3 no-print"><button class="btn btn-sm btn-outline-secondary" onclick="printReport('${esc(report.id)}')"><i class="bi bi-printer me-1"></i>Imprimir</button><button class="btn btn-sm btn-outline-primary" onclick="openReportModal('${esc(report.id)}')"><i class="bi bi-pencil me-1"></i>Editar</button><button class="btn btn-sm btn-outline-danger" onclick="deleteReport('${esc(report.id)}')"><i class="bi bi-trash me-1"></i>Excluir</button></div>`:''}`;
+    }
+    function openReportModal(id=''){
+      let report=id?state.reports.find(item=>item.id===id):generatedReport(); if(!report?.instructorId)return toast('Inicie um atendimento para gerar o relatório.');
+      $('reportId').value=report.id||''; $('reportEvaluationId').value=report.evaluationId||currentEvaluationId||''; $('reportTitle').value=report.title||''; $('reportReference').value=report.reference||currentMonth(); $('reportDate').value=report.date||today(); $('reportStatus').value=report.status||'Em acompanhamento'; $('reportSummary').value=report.summary||''; $('reportOpinion').value=report.opinion||''; $('reportActions').value=(report.actions||[]).join('\n'); bootstrap.Modal.getOrCreateInstance($('reportModal')).show();
+    }
+    async function saveReportFromModal(event){
+      event.preventDefault(); const id=$('reportId').value||uid('relatorio'), existing=state.reports.find(item=>item.id===id), ctx=existing||selectedContext(), timestamp=nowIso();
+      const report={id,evaluationId:$('reportEvaluationId').value||'',instructorId:ctx.instructorId,classId:ctx.classId||'',analystId:ctx.analystId||'',reference:$('reportReference').value,date:$('reportDate').value,title:$('reportTitle').value.trim(),status:$('reportStatus').value,summary:$('reportSummary').value.trim(),opinion:$('reportOpinion').value.trim(),actions:$('reportActions').value.split(/\r?\n/).map(line=>line.trim()).filter(Boolean),profileSnapshot:existing?.profileSnapshot||currentCompetencyProfile(ctx.instructorId,{includeDraft:true}).scores,createdAt:existing?.createdAt||timestamp,updatedAt:timestamp};
+      activeReportId=id; await upsertEntity('reports',report); bootstrap.Modal.getInstance($('reportModal')).hide(); toast(existing?'Relatório atualizado.':'Relatório salvo.');
+    }
+    async function deleteReport(id){ if(confirm('Excluir este relatório/PDI? A avaliação de origem será mantida.')){ await removeEntity('reports',id); if(activeReportId===id)activeReportId=''; toast('Relatório excluído.'); } }
+    function openSavedReport(id){ activeReportId=id; const report=state.reports.find(item=>item.id===id); if(report){ $('instructorSelect').value=report.instructorId; updateClassSelector(report.classId||'__general__'); $('classSelect').value=report.classId||'__general__'; } showTab('#tabAtendimento'); renderReportPreview(); window.scrollTo({top:document.body.scrollHeight,behavior:'smooth'}); }
+    function printReport(id){ const previous=activeReportId; activeReportId=id; printCurrentReport(); activeReportId=previous; }
+    function printCurrentReport(){ const report=activeReportId?state.reports.find(item=>item.id===activeReportId):(sessionActive?generatedReport():null); if(!report)return toast('Nenhum relatório disponível para impressão.'); const instructor=getInstructor(report.instructorId), cls=getClass(report.classId), analyst=getAnalyst(report.analystId); $('printArea').innerHTML=`<div class="print-header"><h2>Sistema de Gestão de PDI · Senac 2026</h2><div>${esc(report.title)}</div></div><p><strong>Instrutor:</strong> ${esc(instructor?.fullName||instructor?.name||'—')}<br><strong>Turma:</strong> ${esc(cls?`${cls.code} — ${cls.course}`:'PDI geral')}<br><strong>Analista:</strong> ${esc(analyst?.name||'Não informado')}<br><strong>Referência:</strong> ${esc(formatMonth(report.reference))}</p><h4>Síntese</h4><p>${esc(report.summary).replace(/\n/g,'<br>')}</p><h4>Parecer</h4><p>${esc(report.opinion||'—').replace(/\n/g,'<br>')}</p><h4>Ações do PDI</h4><ol>${(report.actions||[]).map(action=>`<li>${esc(action)}</li>`).join('')}</ol>`; window.print(); }
+
+    function contextMatch(item){
+      const instructorId=$('instructorSelect').value, selectedClass=$('classSelect').value, analystId=$('analystSelect').value; const classId=selectedClass&&selectedClass!=='__general__'?selectedClass:'';
+      return (!instructorId||item.instructorId===instructorId)&&(!classId||item.classId===classId)&&(!analystId||!item.analystId||item.analystId===analystId);
+    }
+    function initChart(){
+      if(!globalThis.Chart){ $('chartFallback').classList.remove('d-none'); return; }
+      evolutionChart=new Chart($('evolutionChart').getContext('2d'),{type:'line',data:{labels:[],datasets:[{label:'Indicador',data:[],borderColor:'#004a8d',backgroundColor:'rgba(0,74,141,.12)',pointBackgroundColor:'#f2a900',pointBorderColor:'#004a8d',pointRadius:5,borderWidth:3,tension:.28,fill:true}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>`${ctx.dataset.label}: ${ctx.parsed.y}${['overall',...state.competencies.map(c=>c.id)].includes($('chartMetric').value)?'%':''}`}}},scales:{y:{beginAtZero:true,grid:{color:'#e8edf3'}},x:{grid:{display:false}}}}});
+    }
+    function renderChart(){
+      if(!evolutionChart)return; const metric=$('chartMetric').value||'overall'; let rows=[];
+      if(metric==='treatments'||metric==='reports'){
+        const source=metric==='treatments'?state.treatments:state.reports, counts=new Map(); source.filter(contextMatch).forEach(item=>{const month=(item.date||item.reference||'').slice(0,7);if(month)counts.set(month,(counts.get(month)||0)+1)}); rows=[...counts].sort(([a],[b])=>a.localeCompare(b)).map(([label,value])=>({label:formatMonth(label),value}));
+      } else {
+        const records=state.evaluations.filter(contextMatch).map(item=>({item,label:formatMonth(item.reference||item.date?.slice(0,7)),value:metric==='overall'?weightedScore(item.scores)*10:Number(item.scores?.[metric]||0)})).sort((a,b)=>(a.item.date||a.item.reference||'').localeCompare(b.item.date||b.item.reference||''));
+        if(sessionActive&&evaluationActive){ const draft=getAssessmentDraft(), value=metric==='overall'?weightedScore(draft.scores)*10:Number(draft.scores?.[metric]||0), index=records.findIndex(row=>row.item.id===currentEvaluationId); const row={item:draft,label:'Avaliação atual',value}; if(index>=0)records[index]=row; else records.push(row); }
+        const instructorId=$('instructorSelect').value; if(instructorId&&!evaluationActive){ const profile=currentCompetencyProfile(instructorId,{includeDraft:sessionActive}),value=metric==='overall'?weightedScore(profile.scores)*10:Number(profile.scores?.[metric]||0); records.push({item:{date:today()},label:'Perfil atual',value}); }
+        rows=records;
+      }
+      const isScore=metric!=='treatments'&&metric!=='reports'; evolutionChart.data.labels=rows.map(row=>row.label); evolutionChart.data.datasets[0].data=rows.map(row=>Number(row.value.toFixed(2))); evolutionChart.data.datasets[0].label=metric==='overall'?'Pontuação ponderada':metric==='treatments'?'Tratativas':metric==='reports'?'Relatórios':state.competencies.find(c=>c.id===metric)?.name||'Indicador'; evolutionChart.options.scales.y.max=isScore?100:undefined; evolutionChart.options.scales.y.ticks={callback:value=>isScore?`${value}%`:value,precision:0}; evolutionChart.update();
+    }
+
+    function renderStats(){ const pending=state.treatments.filter(item=>!['Realizado','Concluído','Cancelado'].includes(item.status||'Pendente')).length; $('statsRow').innerHTML=[[state.instructors.length,'Instrutores','people'],[state.classes.length,'Turmas na base','mortarboard'],[pending,'Eventos pendentes','hourglass-split'],[state.evaluations.length+state.reports.length,'Avaliações e relatórios','clipboard-check']].map(([value,label,icon])=>`<div class="col-6 col-lg-3"><div class="card stat-card h-100"><div class="card-body d-flex align-items-center gap-3"><i class="bi bi-${icon} fs-3 text-secondary"></i><div><div class="stat-value">${value}</div><div class="small text-secondary">${label}</div></div></div></div></div>`).join(''); }
+    function renderAnalystTable(){ const rows=state.analysts.sort((a,b)=>a.name.localeCompare(b.name,'pt-BR')); $('analystsTableBody').innerHTML=rows.length?rows.map(item=>`<tr><td class="ps-3"><strong>${esc(item.name)}</strong>${item.aliases?.length?`<div class="small text-secondary">${esc(item.aliases.join(', '))}</div>`:''}</td><td><span class="badge ${item.active!==false?'text-bg-success':'text-bg-secondary'}">${item.active!==false?'Ativo':'Inativo'}</span></td><td class="text-end pe-3 mini-actions"><button class="btn btn-sm btn-link" onclick="openAnalystModal('${esc(item.id)}')"><i class="bi bi-pencil"></i></button><button class="btn btn-sm btn-link text-danger" onclick="deleteAnalyst('${esc(item.id)}')"><i class="bi bi-trash"></i></button></td></tr>`).join(''):'<tr><td colspan="3" class="empty-state">Nenhum analista cadastrado.</td></tr>'; }
+    function renderInstructorTable(){
+      const q=normalize($('instructorSearch').value); const rows=state.instructors.filter(item=>!q||normalize([item.name,item.fullName,item.badge,item.location].join(' ')).includes(q)).sort((a,b)=>a.name.localeCompare(b.name,'pt-BR'));
+      $('instructorsTableBody').innerHTML=rows.length?rows.map(item=>{const classes=state.classes.filter(cls=>cls.instructorIds?.includes(item.id)).length;return`<tr><td><strong>${esc(item.name)}</strong><div class="small text-secondary">${esc(item.fullName||'')} ${item.badge?`· ${esc(item.badge)}`:''}</div></td><td>${classes}</td><td><span class="badge ${item.active!==false?'text-bg-success':'text-bg-secondary'}">${item.active!==false?'Ativo':'Inativo'}</span></td><td class="text-end mini-actions"><button class="btn btn-sm btn-link" onclick="openInstructorModal('${esc(item.id)}')"><i class="bi bi-pencil"></i></button><button class="btn btn-sm btn-link text-danger" onclick="deleteInstructor('${esc(item.id)}')"><i class="bi bi-trash"></i></button></td></tr>`}).join(''):'<tr><td colspan="4" class="empty-state">Nenhum instrutor cadastrado.</td></tr>';
+    }
+    function renderClassTable(){
+      const q=normalize($('classSearch').value); const rows=state.classes.filter(item=>{const instructors=(item.instructorIds||[]).map(id=>getInstructor(id)?.name).join(' ');return!q||normalize([item.code,item.course,item.modality,item.status,instructors].join(' ')).includes(q)}).sort((a,b)=>a.code.localeCompare(b.code,'pt-BR'));
+      $('classesTableBody').innerHTML=rows.length?rows.map(item=>`<tr><td><strong>${esc(item.code)}</strong><div class="small text-secondary">${esc(item.modality)}</div></td><td>${esc(item.course)}</td><td>${esc(getAnalyst(item.analystId)?.name||'—')}</td><td>${esc(getInstructor(item.currentInstructorId)?.name||'—')}</td><td><span class="badge ${item.status==='Ativo'?'text-bg-success':item.status==='Agendado'?'text-bg-info':'text-bg-secondary'}">${esc(item.status)}</span></td><td class="text-end mini-actions"><button class="btn btn-sm btn-link" onclick="openClassModal('${esc(item.id)}')"><i class="bi bi-pencil"></i></button><button class="btn btn-sm btn-link text-danger" onclick="deleteClass('${esc(item.id)}')"><i class="bi bi-trash"></i></button></td></tr>`).join(''):'<tr><td colspan="6" class="empty-state">Nenhuma turma cadastrada.</td></tr>';
+    }
+    function rowSearchText(item){ return normalize(JSON.stringify(item)+' '+(getInstructor(item.instructorId)?.name||'')+' '+(getClass(item.classId)?.code||'')+' '+(getAnalyst(item.analystId)?.name||'')); }
+    function renderRecordTables(){
+      const q=normalize($('recordsSearch').value), type=$('recordsTypeFilter').value; $('evaluationsCard').classList.toggle('d-none',!['all','evaluations'].includes(type)); $('treatmentsCard').classList.toggle('d-none',!['all','treatments'].includes(type)); $('reportsCard').classList.toggle('d-none',!['all','reports'].includes(type));
+      const evaluations=state.evaluations.filter(item=>!q||rowSearchText(item).includes(q)).sort((a,b)=>(b.date||'').localeCompare(a.date||'')); $('evaluationsTableBody').innerHTML=evaluations.length?evaluations.map(item=>`<tr><td class="ps-3">${esc(formatMonth(item.reference))}<div class="small text-secondary">${esc(formatDate(item.date))}</div></td><td>${esc(getInstructor(item.instructorId)?.name||'—')}</td><td>${esc(getClass(item.classId)?.code||'PDI geral')}</td><td>${esc(getAnalyst(item.analystId)?.name||'Não informado')}</td><td><strong>${(weightedScore(item.scores)).toLocaleString('pt-BR',{minimumFractionDigits:3,maximumFractionDigits:3})}</strong></td><td class="text-end pe-3 mini-actions"><button class="btn btn-sm btn-link" onclick="printEvaluation('${esc(item.id)}')" title="Imprimir"><i class="bi bi-printer"></i></button><button class="btn btn-sm btn-link" onclick="loadEvaluation('${esc(item.id)}')" title="Editar"><i class="bi bi-pencil"></i></button><button class="btn btn-sm btn-link text-danger" onclick="deleteEvaluation('${esc(item.id)}')" title="Excluir"><i class="bi bi-trash"></i></button></td></tr>`).join(''):'<tr><td colspan="6" class="empty-state">Nenhuma avaliação encontrada.</td></tr>';
+      const treatments=state.treatments.filter(item=>!q||rowSearchText(item).includes(q)).sort((a,b)=>(b.date||'').localeCompare(a.date||'')); $('treatmentsTableBody').innerHTML=treatments.length?treatments.map(item=>{const dueClass=isOverdue(item)?'overdue':'text-secondary';return`<tr><td class="ps-3">${esc(formatDate(item.date))}</td><td>${esc(getInstructor(item.instructorId)?.name||'—')}</td><td><strong>${esc(item.type||'Acompanhamento')}</strong><div class="small text-secondary">${esc(item.priority||'Média')}</div></td><td><select class="form-select status-select" onchange="quickUpdateTreatmentStatus('${esc(item.id)}',this.value)">${statusOptions(item.status||'Pendente')}</select></td><td class="${dueClass}">${item.dueDate?`${isOverdue(item)?'<strong>Atrasado</strong><br>':''}${esc(formatDate(item.dueDate))}`:'—'}</td><td style="max-width:380px"><strong>${esc(item.title||'Sem título')}</strong><div class="small">${esc(item.text||'')}</div>${item.nextAction?`<div class="small text-secondary mt-1">Próxima ação: ${esc(item.nextAction)}</div>`:''}</td><td class="text-end pe-3 mini-actions"><button class="btn btn-sm btn-link" onclick="printTreatment('${esc(item.id)}')" title="Imprimir"><i class="bi bi-printer"></i></button><button class="btn btn-sm btn-link" onclick="editTreatment('${esc(item.id)}')" title="Editar"><i class="bi bi-pencil"></i></button><button class="btn btn-sm btn-link text-danger" onclick="deleteTreatment('${esc(item.id)}')" title="Excluir"><i class="bi bi-trash"></i></button></td></tr>`}).join(''):'<tr><td colspan="7" class="empty-state">Nenhum evento ou tratativa encontrado.</td></tr>';
+      const reports=state.reports.filter(item=>!q||rowSearchText(item).includes(q)).sort((a,b)=>(b.date||'').localeCompare(a.date||'')); $('reportsTableBody').innerHTML=reports.length?reports.map(item=>`<tr><td class="ps-3">${esc(formatMonth(item.reference))}</td><td><strong>${esc(item.title)}</strong></td><td>${esc(getInstructor(item.instructorId)?.name||'—')}</td><td><span class="badge text-bg-light">${esc(item.status)}</span></td><td class="text-end pe-3 mini-actions"><button class="btn btn-sm btn-link" onclick="openSavedReport('${esc(item.id)}')" title="Abrir"><i class="bi bi-eye"></i></button><button class="btn btn-sm btn-link" onclick="printReport('${esc(item.id)}')" title="Imprimir"><i class="bi bi-printer"></i></button><button class="btn btn-sm btn-link" onclick="openReportModal('${esc(item.id)}')" title="Editar"><i class="bi bi-pencil"></i></button><button class="btn btn-sm btn-link text-danger" onclick="deleteReport('${esc(item.id)}')" title="Excluir"><i class="bi bi-trash"></i></button></td></tr>`).join(''):'<tr><td colspan="5" class="empty-state">Nenhum relatório encontrado.</td></tr>';
+    }
+    function renderCompetencyReference(){ $('competencyReference').innerHTML=state.competencies.map((comp,index)=>{const library=FEEDBACK_LIBRARY[comp.id]||{};return`<div class="accordion-item"><h2 class="accordion-header"><button class="accordion-button ${index?'collapsed':''}" data-bs-toggle="collapse" data-bs-target="#compRef${index}"><span class="badge me-3" style="background:var(--senac-blue)">${String(index+1).padStart(2,'0')}</span>${esc(comp.name)}</button></h2><div id="compRef${index}" class="accordion-collapse collapse ${index?'':'show'}" data-bs-parent="#competencyReference"><div class="accordion-body"><p>${esc(comp.definition)}</p><div class="question"><strong>Pergunta norteadora:</strong> ${esc(comp.question)}</div><h6 class="mt-3">Base de apoio ao feedback</h6><div class="row g-2"><div class="col-md-6"><div class="support-item"><strong>Reconhecimento</strong><div class="small">${esc(library.recognition||'')}</div></div></div><div class="col-md-6"><div class="support-item"><strong>Feedback construtivo</strong><div class="small">${esc(library.constructive||'')}</div></div></div><div class="col-md-6"><div class="support-item"><strong>Pergunta de reflexão</strong><div class="small">${esc(library.question||'')}</div></div></div><div class="col-md-6"><div class="support-item"><strong>Ação sugerida</strong><div class="small">${esc(library.action||'')}</div></div></div><div class="col-12"><div class="support-item"><strong>Treinamento sugerido</strong><div class="small">${esc(library.training||'')}</div></div></div></div><div class="source-note mt-2">Peso de referência: ${(comp.weight*10).toLocaleString('pt-BR',{maximumFractionDigits:1})}%.</div></div></div></div>`}).join(''); }
+
+    function openAnalystModal(id=''){ const item=state.analysts.find(record=>record.id===id); $('analystId').value=item?.id||''; $('analystName').value=item?.name||''; $('analystAliases').value=(item?.aliases||[]).join(', '); $('analystActive').checked=item?.active!==false; bootstrap.Modal.getOrCreateInstance($('analystModal')).show(); }
+    async function saveAnalyst(event){ event.preventDefault(); const id=$('analystId').value||uid('analista'), existing=state.analysts.find(item=>item.id===id), name=$('analystName').value.trim(); if(state.analysts.some(item=>item.id!==id&&normalize(item.name)===normalize(name)))return toast('Já existe um analista com esse nome.'); const item={id,name,aliases:$('analystAliases').value.split(',').map(v=>v.trim()).filter(Boolean),active:$('analystActive').checked,createdAt:existing?.createdAt||nowIso(),updatedAt:nowIso()}; await upsertEntity('analysts',item); bootstrap.Modal.getInstance($('analystModal')).hide(); toast('Analista salvo.'); }
+    async function deleteAnalyst(id){ const count=state.classes.filter(item=>item.analystId===id).length+state.evaluations.filter(item=>item.analystId===id).length+state.treatments.filter(item=>item.analystId===id).length+state.reports.filter(item=>item.analystId===id).length; if(!confirm(`Excluir analista? ${count} vínculo(s) ficarão sem analista.`))return; for(const key of ['classes','evaluations','treatments','reports'])for(const item of state[key].filter(record=>record.analystId===id))await upsertEntity(key,{...item,analystId:'',updatedAt:nowIso()},{render:false}); await removeEntity('analysts',id); toast('Analista excluído e vínculos preservados sem responsável.'); }
+    function openInstructorModal(id=''){ const item=state.instructors.find(record=>record.id===id); $('instructorId').value=item?.id||''; $('instructorName').value=item?.name||''; $('instructorFullName').value=item?.fullName||''; $('instructorBadge').value=item?.badge||''; $('instructorRole').value=item?.role||''; $('instructorLocation').value=item?.location||''; $('instructorAliases').value=(item?.aliases||[]).join(', '); $('instructorActive').checked=item?.active!==false; bootstrap.Modal.getOrCreateInstance($('instructorModal')).show(); }
+    async function saveInstructor(event){ event.preventDefault(); const id=$('instructorId').value||uid('instrutor'), existing=state.instructors.find(item=>item.id===id), name=$('instructorName').value.trim(); if(state.instructors.some(item=>item.id!==id&&normalize(item.name)===normalize(name)))return toast('Já existe um instrutor com esse nome.'); const item={id,name,fullName:$('instructorFullName').value.trim()||name,badge:$('instructorBadge').value.trim(),role:$('instructorRole').value.trim(),location:$('instructorLocation').value.trim(),aliases:$('instructorAliases').value.split(',').map(v=>v.trim()).filter(Boolean),active:$('instructorActive').checked,createdAt:existing?.createdAt||nowIso(),updatedAt:nowIso()}; await upsertEntity('instructors',item); bootstrap.Modal.getInstance($('instructorModal')).hide(); toast('Instrutor salvo sem romper seus vínculos.'); }
+    async function deleteInstructor(id){ const counts={turmas:state.classes.filter(item=>item.instructorIds?.includes(id)).length,avaliações:state.evaluations.filter(item=>item.instructorId===id).length,tratativas:state.treatments.filter(item=>item.instructorId===id).length,relatórios:state.reports.filter(item=>item.instructorId===id).length}; if(!confirm(`Excluir este instrutor e seus registros?\n${Object.entries(counts).map(([k,v])=>`${k}: ${v}`).join('\n')}`))return; for(const cls of state.classes.filter(item=>item.instructorIds?.includes(id)||item.currentInstructorId===id))await upsertEntity('classes',{...cls,instructorIds:(cls.instructorIds||[]).filter(value=>value!==id),currentInstructorId:cls.currentInstructorId===id?'':cls.currentInstructorId},{render:false}); for(const key of ['evaluations','treatments','reports'])for(const item of state[key].filter(record=>record.instructorId===id))await removeEntity(key,item.id,{render:false}); await removeEntity('instructors',id); toast('Instrutor e registros dependentes excluídos.'); }
+
+    function populateClassModalOptions(selectedIds=[],currentId=''){ $('classAnalyst').innerHTML='<option value="">Sem analista</option>'+state.analysts.sort((a,b)=>a.name.localeCompare(b.name,'pt-BR')).map(item=>`<option value="${esc(item.id)}">${esc(item.name)}</option>`).join(''); $('classInstructors').innerHTML=state.instructors.sort((a,b)=>a.name.localeCompare(b.name,'pt-BR')).map(item=>`<option value="${esc(item.id)}" ${selectedIds.includes(item.id)?'selected':''}>${esc(item.name)}</option>`).join(''); refreshCurrentInstructorOptions(currentId); }
+    function refreshCurrentInstructorOptions(preferred=''){ const selected=[...$('classInstructors').selectedOptions].map(option=>option.value); const current=typeof preferred==='string'?preferred:$('classCurrentInstructor').value; $('classCurrentInstructor').innerHTML='<option value="">Sem instrutor atual</option>'+selected.map(id=>`<option value="${esc(id)}">${esc(getInstructor(id)?.name||id)}</option>`).join(''); if(selected.includes(current))$('classCurrentInstructor').value=current; }
+    function openClassModal(id=''){ const item=state.classes.find(record=>record.id===id); $('classId').value=item?.id||''; $('classCode').value=item?.code||''; $('classModality').value=item?.modality||''; $('classCourse').value=item?.course||''; $('classStudents').value=item?.students||0; $('classStart').value=item?.startDate||''; $('classEnd').value=item?.endDate||''; $('classHandoff1').value=item?.handoff1||''; $('classHandoff2').value=item?.handoff2||''; $('classStatus').value=item?.status||'Ativo'; populateClassModalOptions(item?.instructorIds||[],item?.currentInstructorId||''); $('classAnalyst').value=item?.analystId||''; bootstrap.Modal.getOrCreateInstance($('classModal')).show(); }
+    async function saveClass(event){ event.preventDefault(); const id=$('classId').value||uid('turma'), existing=state.classes.find(item=>item.id===id), code=$('classCode').value.trim(); if(state.classes.some(item=>item.id!==id&&normalize(item.code)===normalize(code)))return toast('Já existe uma turma com esse código.'); const instructorIds=[...$('classInstructors').selectedOptions].map(option=>option.value); const item={id,code,modality:$('classModality').value.trim(),course:$('classCourse').value.trim(),analystId:$('classAnalyst').value,students:Number($('classStudents').value)||0,startDate:$('classStart').value,endDate:$('classEnd').value,handoff1:$('classHandoff1').value,handoff2:$('classHandoff2').value,instructorIds,currentInstructorId:$('classCurrentInstructor').value,status:$('classStatus').value,createdAt:existing?.createdAt||nowIso(),updatedAt:nowIso()}; await upsertEntity('classes',item); bootstrap.Modal.getInstance($('classModal')).hide(); toast('Turma salva.'); }
+    async function deleteClass(id){ const counts=state.evaluations.filter(item=>item.classId===id).length+state.treatments.filter(item=>item.classId===id).length+state.reports.filter(item=>item.classId===id).length; if(!confirm(`Excluir esta turma e ${counts} registro(s) diretamente vinculados?`))return; for(const key of ['evaluations','treatments','reports'])for(const item of state[key].filter(record=>record.classId===id))await removeEntity(key,item.id,{render:false}); await removeEntity('classes',id); toast('Turma e registros vinculados excluídos.'); }
+
+    async function readWorkbook(file){ const bytes=new Uint8Array(await file.arrayBuffer()); return XLSX.read(bytes,{type:'array'}); }
+    function cellText(value){ return String(value??'').replace(/\u00a0/g,' ').replace(/\s+/g,' ').trim(); }
+    function findLabelValue(rows,label){ const target=normalize(label); for(const row of rows){ for(let i=0;i<row.length;i++){ const text=cellText(row[i]); if(normalize(text.replace(/:$/,''))===target){ for(let j=i+1;j<row.length;j++)if(cellText(row[j]))return cellText(row[j]); } if(normalize(text).startsWith(target+' '))return text.slice(label.length).replace(/^\s*:\s*/,'').trim(); } } return ''; }
+    function matchInstructor(fullName){ const value=normalize(fullName); return state.instructors.find(item=>[item.name,item.fullName,...(item.aliases||[])].some(alias=>{const key=normalize(alias);return key&&(value.includes(key)||key.includes(value))})); }
+    async function importPdiWorkbook(event){
+      const file=event.target.files[0]; event.target.value=''; if(!file)return; if(!globalThis.XLSX)return toast('Biblioteca de Excel indisponível.');
+      try {
+        const workbook=await readWorkbook(file), sheet=workbook.Sheets[workbook.SheetNames.find(name=>normalize(name).includes('avaliacao'))||workbook.SheetNames[0]], rows=XLSX.utils.sheet_to_json(sheet,{header:1,defval:''}); const fullName=findLabelValue(rows,'NOME'); if(!fullName)throw new Error('Nome do empregado não localizado.');
+        let instructor=matchInstructor(fullName); if(!instructor){ instructor={id:uid('instrutor'),name:fullName.toLowerCase().replace(/\b\w/g,char=>char.toUpperCase()),fullName,badge:findLabelValue(rows,'CRACHÁ'),role:findLabelValue(rows,'CARGO'),location:findLabelValue(rows,'LOTAÇÃO'),aliases:[],active:true,createdAt:nowIso(),updatedAt:nowIso()}; await upsertEntity('instructors',instructor,{render:false}); }
+        else { instructor={...instructor,fullName,badge:findLabelValue(rows,'CRACHÁ')||instructor.badge,role:findLabelValue(rows,'CARGO')||instructor.role,location:findLabelValue(rows,'LOTAÇÃO')||instructor.location,updatedAt:nowIso()}; await upsertEntity('instructors',instructor,{render:false}); }
+        const scores={},evidence={}; for(const comp of state.competencies){ const index=rows.findIndex(row=>row.some(cell=>normalize(cell)===normalize(comp.name))); scores[comp.id]=75; evidence[comp.id]=''; if(index>=0){ for(let offset=1;offset<=4;offset++)if(rows[index+offset]?.some(cell=>normalize(cell)==='x'))scores[comp.id]=[100,75,50,25][offset-1]; const evidenceRow=rows.slice(index+1,index+9).find(row=>row.some(cell=>normalize(cell).includes('evidencias que justificam'))); if(evidenceRow){ const labelIndex=evidenceRow.findIndex(cell=>normalize(cell).includes('evidencias que justificam')); evidence[comp.id]=cellText(evidenceRow.slice(labelIndex+1).find(cell=>cellText(cell))); } } }
+        const opinionIndex=rows.findIndex(row=>row.some(cell=>normalize(cell).includes('parecer do avaliador'))); let opinion=''; if(opinionIndex>=0)opinion=rows.slice(opinionIndex,opinionIndex+3).flat().map(cellText).filter(text=>text&&normalize(text)!=='parecer do avaliador').sort((a,b)=>b.length-a.length)[0]||'';
+        const ctx=selectedContext(), timestamp=nowIso(), item={id:uid('avaliacao'),instructorId:instructor.id,classId:ctx.instructorId===instructor.id?ctx.classId:'',analystId:ctx.analystId||'',reference:$('referenceInput').value||currentMonth(),date:$('assessmentDateInput').value||today(),scores,evidence,opinion,officialScore:weightedScore(scores),source:file.name,createdAt:timestamp,updatedAt:timestamp}; await upsertEntity('evaluations',item,{render:false}); await upsertEntity('treatments',{id:uid('evento'),instructorId:instructor.id,classId:item.classId,analystId:item.analystId,date:item.date,type:'Avaliação base',status:'Concluído',priority:'Média',effect:'neutral',dueDate:'',followUpDate:'',title:'Importação de PDI',text:`PDI importado de ${file.name} e correlacionado pelo nome completo “${fullName}”.`,nextAction:'',competencyIds:state.competencies.map(comp=>comp.id),impacts:{},createdAt:timestamp,updatedAt:timestamp},{render:false}); persistLocal(); renderAll(); loadEvaluation(item.id); toast(`PDI importado e correlacionado a ${instructor.name}.`);
+      } catch(error){ console.error(error); toast(`Não foi possível importar o PDI: ${error.message}`); }
+    }
+    function findOrCreateImportedInstructor(name,newInstructors){ const clean=cellText(name); if(!clean||/^\d+$/.test(clean))return''; let item=matchInstructor(clean)||newInstructors.find(record=>normalize(record.name)===normalize(clean)); if(!item){ item={id:uid('instrutor'),name:clean,fullName:clean,badge:'',role:'Instrutor(a)',location:'',aliases:[],active:true,createdAt:nowIso(),updatedAt:nowIso()}; newInstructors.push(item); } return item.id; }
+    function matchAnalystByName(name){ const value=normalize(name); return state.analysts.find(item=>[item.name,...(item.aliases||[])].some(alias=>normalize(alias)===value)); }
+    function findOrCreateImportedAnalyst(name,newAnalysts){ const clean=cellText(name); if(!clean)return''; let item=matchAnalystByName(clean)||newAnalysts.find(record=>normalize(record.name)===normalize(clean)); if(!item){ item={id:uid('analista'),name:clean,aliases:[],active:true,createdAt:nowIso(),updatedAt:nowIso()}; newAnalysts.push(item); } return item.id; }
+    function parseBrazilianDate(value){ const match=cellText(value).match(/^(\d{2})\/(\d{2})\/(\d{4})$/); return match?`${match[3]}-${match[2]}-${match[1]}`:''; }
+    async function importGeneralReport(event){
+      const file=event.target.files[0]; event.target.value=''; if(!file)return;
+      try { const workbook=await readWorkbook(file), sheet=workbook.Sheets[workbook.SheetNames.find(name=>normalize(name).includes('relatorio'))||workbook.SheetNames[0]], rows=XLSX.utils.sheet_to_json(sheet,{header:1,defval:''}); const headers=rows[0].map(normalize); if(!headers.includes('turma'))throw new Error('A coluna Turma não foi encontrada.'); const newAnalysts=[],newInstructors=[],newClasses=[];
+        for(const row of rows.slice(1)){ const code=cellText(row[0]); if(!code)continue; const instructorIds=[...new Set([9,10,11,12].map(index=>findOrCreateImportedInstructor(row[index],newInstructors)).filter(Boolean))], currentInstructorId=findOrCreateImportedInstructor(row[12],newInstructors), analystId=findOrCreateImportedAnalyst(row[3],newAnalysts), existing=state.classes.find(item=>normalize(item.code)===normalize(code)); newClasses.push({id:existing?.id||uid('turma'),code,modality:cellText(row[1]),course:cellText(row[2]),analystId,students:Number(row[4])||0,startDate:parseBrazilianDate(row[5]),endDate:parseBrazilianDate(row[6]),handoff1:parseBrazilianDate(row[7]),handoff2:parseBrazilianDate(row[8]),instructorIds,currentInstructorId,status:cellText(row[13])||'Ativo',createdAt:existing?.createdAt||nowIso(),updatedAt:nowIso()}); }
+        if(newAnalysts.length)await upsertMany('analysts',newAnalysts); if(newInstructors.length)await upsertMany('instructors',newInstructors); await upsertMany('classes',newClasses); toast(`Base atualizada: ${newClasses.length} turmas, ${newInstructors.length} instrutor(es) e ${newAnalysts.length} analista(s) incluído(s).`);
+      } catch(error){ console.error(error); toast(`Falha ao importar relatório geral: ${error.message}`); }
+    }
+    function exportBackup(){ const blob=new Blob([JSON.stringify(state,null,2)],{type:'application/json'}),url=URL.createObjectURL(blob),link=document.createElement('a'); link.href=url; link.download=`backup-pdi-${today()}.json`; link.click(); URL.revokeObjectURL(url); }
+    async function importBackup(event){ const file=event.target.files[0]; event.target.value=''; if(!file)return; try{const parsed=JSON.parse(await file.text()); if(parsed?.version!==3||!Array.isArray(parsed.instructors)||!Array.isArray(parsed.classes))throw new Error('Formato incompatível.'); if(!confirm('Substituir a base atual pelo backup selecionado?'))return; state=parsed; persistLocal(); renderAll(); toast('Backup restaurado. No modo online, as próximas edições sincronizam registro a registro.');}catch(error){toast(`Backup inválido: ${error.message}`)} }
+    async function resetSeed(){ if(!confirm('Zerar toda a base operacional? Instrutores, turmas, eventos, avaliações e relatórios serão excluídos.'))return; if(mode==='remote'&&db){ for(const key of ['reports','treatments','evaluations','classes','instructors','analysts'])for(const item of [...state[key]])await db.collection(COLLECTIONS[key]).doc(item.id).delete(); } state=clone(SEED_DATA); persistLocal(); sessionActive=false; evaluationActive=false; currentEvaluationId=currentTreatmentId=activeReportId=''; setSessionEnabled(false); $('sessionBanner').classList.add('d-none'); renderAll(); toast('Base operacional zerada. As competências e a biblioteca de apoio foram mantidas.'); }
+
+    $('loginButton').addEventListener('click',login); $('passwordInput').addEventListener('keydown',event=>{if(event.key==='Enter')login()}); $('localModeButton').addEventListener('click',startLocalMode);
+    if(sessionStorage.getItem('pdi-local-mode')==='1') startLocalMode(); else initializeFirebase();
+  </script>
 </body>
 </html>
